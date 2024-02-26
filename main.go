@@ -32,24 +32,6 @@ type Config struct {
 	CheckInterval   int
 }
 
-type IPRecord struct {
-	IP   net.IP
-	Risk int
-	// 0 safe
-	// 1 unknown / low
-	// 1 suspicious
-	// 2 malicious
-	Description string
-	// ASN    string
-	// TODO: geoip
-	ConfirmedBy string
-}
-
-// Threat Intelligence Center
-type TIX interface {
-	CheckIPs(ips []net.IP) []IPRecord
-}
-
 func capture() {
 	time.Sleep(1 * time.Second)
 	for {
@@ -89,20 +71,11 @@ func check() {
 
 func init() {
 	// config
-	data, err := os.ReadFile("config.yml")
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		log.Fatal(err)
-	}
+	data, _ := os.ReadFile("config.yml")
+	yaml.Unmarshal(data, &config)
 
 	// db
-	db, err = leveldb.OpenFile("db", nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	db, _ = leveldb.OpenFile("db", nil)
 	defer db.Close()
 }
 
