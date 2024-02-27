@@ -3,7 +3,7 @@ package tix
 import "net"
 
 type ThreatBook struct {
-	APIKey string
+	APIKey string `yaml:"apikey"`
 }
 
 func (t *ThreatBook) CheckIPs(ips []net.IP) []IPRecord {

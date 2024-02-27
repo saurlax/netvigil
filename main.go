@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	packets = make(chan NetStatData)
+	sockets chan NetStatData
 	config  Config
 	db      *leveldb.DB
 )
@@ -25,21 +25,25 @@ type NetStatData struct {
 	LocalPort  uint16
 	RemoteAddr net.IP
 	RemotePort uint16
+	ExeName    string
 	ExePath    string
+	Pid        int
 }
 
 type Config struct {
-	CaptureInterval int `yaml:"capture_interval"`
-	CheckInterval   int `yaml:"check_interval"`
-	ThreatBook      tix.ThreatBook
+	CaptureInterval int            `yaml:"capture_interval"`
+	CheckInterval   int            `yaml:"check_interval"`
+	Buffer          int            `yaml:"buffer"`
+	Local           tix.Local      `yaml:"local"`
+	ThreatBook      tix.ThreatBook `yaml:"threatbook"`
 }
 
 func capture() {
+	accepted := func(s *netstat.SockTabEntry) bool {
+		return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
+	}
 	for {
 		var err error
-		accepted := func(s *netstat.SockTabEntry) bool {
-			return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
-		}
 		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
 		tcps, err := netstat.TCPSocks(accepted)
 		if err != nil {
@@ -58,25 +62,28 @@ func capture() {
 			log.Println("Failed to get udp6 socks", err)
 		}
 		tabs := append(append(append(tcps, tcp6s...), udps...), udp6s...)
-
+		log.Println("Captured", len(tabs), "sockets")
+	Loop:
 		for _, e := range tabs {
 			proc, err := ps.FindProcess(int(e.Process.Pid))
 			if err != nil {
 				fmt.Println("Failed to determine process:", err)
 				continue
 			}
+			path, _ := proc.Path()
 
-			path, err := proc.Path()
-			if err != nil {
-				fmt.Println("Failed to determine path:", err)
-				// FIXME: may fail for some processes
-			}
-			packets <- NetStatData{
+			select {
+			case sockets <- NetStatData{
 				LocalAddr:  e.LocalAddr.IP,
 				LocalPort:  e.LocalAddr.Port,
 				RemoteAddr: e.RemoteAddr.IP,
 				RemotePort: e.RemoteAddr.Port,
+				ExeName:    e.Process.Name,
+				Pid:        e.Process.Pid,
 				ExePath:    path,
+			}:
+			default:
+				break Loop
 			}
 		}
 	}
@@ -85,8 +92,23 @@ func capture() {
 func check() {
 	for {
 		time.Sleep(time.Duration(config.CheckInterval) * time.Second)
-		c := <-packets
-		println(c.RemoteAddr.String(), c.ExePath)
+		var ips []net.IP
+	Loop:
+		for {
+			select {
+			case i := <-sockets:
+				for _, v := range ips {
+					if v.Equal(i.RemoteAddr) {
+						continue
+					}
+					ips = append(ips, i.RemoteAddr)
+				}
+			default:
+				break Loop
+			}
+		}
+		config.Local.CheckIPs(ips)
+		config.ThreatBook.CheckIPs(ips)
 	}
 }
 
@@ -104,10 +126,18 @@ func init() {
 	// db
 	db, _ = leveldb.OpenFile("db", nil)
 	defer db.Close()
+
+	buffer := config.Buffer
+	if buffer <= 0 {
+		buffer = 200
+	}
+	sockets = make(chan NetStatData, buffer)
 }
 
 func main() {
 	log.Println("Service started")
+	println(config.ThreatBook.APIKey)
+	println(config.ThreatBook.APIKey == "")
 	go capture()
 	check()
 }

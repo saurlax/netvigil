@@ -10,9 +10,9 @@ type IPRecord struct {
 	IP   net.IP
 	Risk int
 	// 0 safe
-	// 1 unknown / low
-	// 1 suspicious
-	// 2 malicious
+	// 1 unknown
+	// 2 suspicious
+	// 3 malicious
 	Description string
 	// ASN    string
 	// TODO: geoip
