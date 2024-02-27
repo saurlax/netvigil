@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db // indirect
+	github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect

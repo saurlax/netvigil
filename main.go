@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/mitchellh/go-ps"
+	"github.com/keybase/go-ps"
 	"github.com/saurlax/net-vigil/tix"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v3"
@@ -36,19 +36,37 @@ type Config struct {
 
 func capture() {
 	for {
-		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
-		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
+		var err error
+		accepted := func(s *netstat.SockTabEntry) bool {
 			return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
-		})
+		}
+		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
+		tcps, err := netstat.TCPSocks(accepted)
 		if err != nil {
-			log.Println("Cannot get TCPSocks", err)
+			log.Println("Failed to get tcp socks", err)
 			continue
 		}
+		tcp6s, err := netstat.TCP6Socks(accepted)
+		if err != nil {
+			log.Println("Failed to get tcp6 socks", err)
+			continue
+		}
+		udps, err := netstat.UDPSocks(accepted)
+		if err != nil {
+			log.Println("Failed to get udp socks", err)
+			continue
+		}
+		udp6s, err := netstat.UDP6Socks(accepted)
+		if err != nil {
+			log.Println("Failed to get udp6 socks", err)
+			continue
+		}
+		tabs := append(append(append(tcps, tcp6s...), udps...), udp6s...)
 
 		for _, e := range tabs {
 			proc, err := ps.FindProcess(int(e.Process.Pid))
 			if err != nil {
-				fmt.Println("Error:", err)
+				fmt.Println("Failed to determine pid:", err)
 				continue
 			}
 			packets <- NetStatData{
