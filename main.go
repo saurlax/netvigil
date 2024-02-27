@@ -38,7 +38,7 @@ func capture() {
 	for {
 		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
 		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
-			return s.State == netstat.Established
+			return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
 		})
 		if err != nil {
 			log.Println("Cannot get TCPSocks", err)
