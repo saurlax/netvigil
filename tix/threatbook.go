@@ -7,5 +7,10 @@ type ThreatBook struct {
 }
 
 func (t *ThreatBook) CheckIPs(ips []net.IP) []IPRecord {
-	return nil
+	records := make([]IPRecord, len(ips))
+
+	for i, ip := range ips {
+		records[i] = IPRecord{IP: ip, Risk: 1, ConfirmedBy: "ThreatBook"}
+	}
+	return records
 }

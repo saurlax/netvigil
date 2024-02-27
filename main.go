@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net"
@@ -92,24 +93,64 @@ func capture() {
 func check() {
 	for {
 		time.Sleep(time.Duration(config.CheckInterval) * time.Second)
+		log.Println("Checking")
 		var ips []net.IP
 	Loop:
 		for {
 			select {
 			case i := <-sockets:
-				for _, v := range ips {
-					if v.Equal(i.RemoteAddr) {
+				data, _ := db.Get(i.RemoteAddr, nil)
+				if data != nil {
+					var record tix.IPRecord
+					err := json.Unmarshal(data, &record)
+					if err != nil {
+						log.Println("Failed to unmarshal record:", i.RemoteAddr, err)
 						continue
 					}
-					ips = append(ips, i.RemoteAddr)
+					if record.Risk > 1 {
+						detected(record)
+					}
+					continue
 				}
+				// dedup
+				for _, v := range ips {
+					if v.Equal(i.RemoteAddr) {
+						continue Loop
+					}
+				}
+				ips = append(ips, i.RemoteAddr)
 			default:
 				break Loop
 			}
 		}
-		config.Local.CheckIPs(ips)
-		config.ThreatBook.CheckIPs(ips)
+
+		records := config.ThreatBook.CheckIPs(ips)
+		// TODO: more tix
+		for i, v := range config.Local.CheckIPs(ips) {
+			if v.Risk == 0 {
+				records[i] = v
+			} else if v.Risk > records[i].Risk {
+				records[i] = v
+			}
+		}
+
+		// store
+		for _, record := range records {
+			if record.Risk > 1 {
+				detected(record)
+			}
+			value, err := json.Marshal(record)
+			if err != nil {
+				log.Println("Failed to marshal record:", record.IP, err)
+				continue
+			}
+			db.Put(record.IP, value, nil)
+		}
 	}
+}
+
+func detected(record tix.IPRecord) {
+	log.Println("Threat detected:", record.IP, record.Description, record.ConfirmedBy)
 }
 
 func init() {
@@ -129,15 +170,13 @@ func init() {
 
 	buffer := config.Buffer
 	if buffer <= 0 {
-		buffer = 200
+		buffer = 100
 	}
 	sockets = make(chan NetStatData, buffer)
 }
 
 func main() {
 	log.Println("Service started")
-	println(config.ThreatBook.APIKey)
-	println(config.ThreatBook.APIKey == "")
 	go capture()
 	check()
 }
