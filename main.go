@@ -9,13 +9,14 @@ import (
 
 	"github.com/cakturk/go-netstat/netstat"
 	"github.com/mitchellh/go-ps"
+	"github.com/saurlax/net-vigil/tix"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v3"
 )
 
 var (
-	config  Config = Config{}
-	packets        = make(chan NetStatData)
+	packets = make(chan NetStatData)
+	config  Config
 	db      *leveldb.DB
 )
 
@@ -28,13 +29,14 @@ type NetStatData struct {
 }
 
 type Config struct {
-	CaptureInterval int
-	CheckInterval   int
+	CaptureInterval int `yaml:"capture_interval"`
+	CheckInterval   int `yaml:"check_interval"`
+	ThreatBook      tix.ThreatBook
 }
 
 func capture() {
-	time.Sleep(1 * time.Second)
 	for {
+		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
 		tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {
 			return s.State == netstat.Established
 		})
@@ -63,7 +65,7 @@ func capture() {
 
 func check() {
 	for {
-		time.Sleep(1 * time.Second)
+		time.Sleep(time.Duration(config.CheckInterval) * time.Second)
 		c := <-packets
 		println(c.RemoteAddr.String())
 	}
@@ -73,6 +75,12 @@ func init() {
 	// config
 	data, _ := os.ReadFile("config.yml")
 	yaml.Unmarshal(data, &config)
+	if config.CaptureInterval <= 0 {
+		config.CaptureInterval = 10
+	}
+	if config.CheckInterval <= 0 {
+		config.CheckInterval = 60
+	}
 
 	// db
 	db, _ = leveldb.OpenFile("db", nil)
