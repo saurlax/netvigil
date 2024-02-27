@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/keybase/go-ps"
 	"github.com/saurlax/net-vigil/tix"
 	"github.com/syndtr/goleveldb/leveldb"
 	"gopkg.in/yaml.v3"
@@ -35,6 +35,7 @@ type Config struct {
 	CaptureInterval int            `yaml:"capture_interval"`
 	CheckInterval   int            `yaml:"check_interval"`
 	Buffer          int            `yaml:"buffer"`
+	Port            int            `yaml:"port"`
 	Local           tix.Local      `yaml:"local"`
 	ThreatBook      tix.ThreatBook `yaml:"threatbook"`
 }
@@ -66,12 +67,13 @@ func capture() {
 		log.Println("Captured", len(tabs), "sockets")
 	Loop:
 		for _, e := range tabs {
-			proc, err := ps.FindProcess(int(e.Process.Pid))
-			if err != nil {
-				fmt.Println("Failed to determine process:", err)
-				continue
-			}
-			path, _ := proc.Path()
+			// proc, err := ps.FindProcess(int(e.Process.Pid))
+			// if err != nil {
+			// 	fmt.Println("Failed to determine process:", err)
+			// 	continue
+			// }
+			// path, _ := proc.Path()
+			// FIXME: unstable function
 
 			select {
 			case sockets <- NetStatData{
@@ -81,7 +83,7 @@ func capture() {
 				RemotePort: e.RemoteAddr.Port,
 				ExeName:    e.Process.Name,
 				Pid:        e.Process.Pid,
-				ExePath:    path,
+				// ExePath:    path,
 			}:
 			default:
 				break Loop
@@ -151,8 +153,7 @@ func detected(record tix.IPRecord) {
 	log.Println("Threat detected:", record.IP, record.Reason, record.ConfirmedBy)
 }
 
-func init() {
-	// config
+func configuration() {
 	data, _ := os.ReadFile("config.yml")
 	yaml.Unmarshal(data, &config)
 	if config.CaptureInterval <= 0 {
@@ -161,20 +162,50 @@ func init() {
 	if config.CheckInterval <= 0 {
 		config.CheckInterval = 60
 	}
-
-	// db
-	db, _ = leveldb.OpenFile("db", nil)
-	defer db.Close()
-
-	buffer := config.Buffer
-	if buffer <= 0 {
-		buffer = 100
+	if config.Buffer <= 0 {
+		config.Buffer = 100
 	}
-	sockets = make(chan NetStatData, buffer)
+	if config.Port <= 0 {
+		config.Port = 3680
+	}
+}
+
+func database() {
+	sockets = make(chan NetStatData, config.Buffer)
+	db, _ = leveldb.OpenFile("db", nil)
+}
+
+func webservice() {
+	staticHandler := http.FileServer(http.Dir("public"))
+	ipRecordHandler := func(w http.ResponseWriter, r *http.Request) {
+		var records []tix.IPRecord
+		iter := db.NewIterator(nil, nil)
+		for iter.Next() {
+			data := iter.Value()
+			var record tix.IPRecord
+			json.Unmarshal(data, &record)
+			records = append(records, record)
+		}
+		iter.Release()
+		w.Header().Set("Content-Type", "application/json")
+
+		json.NewEncoder(w).Encode(records)
+	}
+	http.Handle("/", staticHandler)
+	http.HandleFunc("/iprecords", ipRecordHandler)
+	log.Printf("Serber started at http://localhost:%d\n", config.Port)
+	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)
+}
+
+func init() {
+	configuration()
+	database()
+	go webservice()
 }
 
 func main() {
 	log.Println("Service started")
 	go capture()
 	check()
+	defer db.Close()
 }
