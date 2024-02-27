@@ -127,9 +127,7 @@ func check() {
 		records := config.ThreatBook.CheckIPs(ips)
 		// TODO: more tix
 		for i, v := range config.Local.CheckIPs(ips) {
-			if v.Risk == 0 {
-				records[i] = v
-			} else if v.Risk > records[i].Risk {
+			if v.Risk > records[i].Risk {
 				records[i] = v
 			}
 		}
@@ -150,7 +148,7 @@ func check() {
 }
 
 func detected(record tix.IPRecord) {
-	log.Println("Threat detected:", record.IP, record.Description, record.ConfirmedBy)
+	log.Println("Threat detected:", record.IP, record.Reason, record.ConfirmedBy)
 }
 
 func init() {

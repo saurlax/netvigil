@@ -13,17 +13,17 @@ Loop:
 	for i, ip := range ips {
 		for _, v := range t.Blacklist {
 			if v.Equal(ip) {
-				records[i] = IPRecord{IP: ip, Risk: 3, Description: "Blacklisted", ConfirmedBy: "Local"}
+				records[i] = IPRecord{IP: ip, Risk: Malicious, Reason: "Blacklisted", ConfirmedBy: "Local"}
 				continue Loop
 			}
 		}
 		for _, v := range t.Whitelist {
 			if v.Equal(ip) {
-				records[i] = IPRecord{IP: ip, Risk: 0, Description: "Whitelisted", ConfirmedBy: "Local"}
+				records[i] = IPRecord{IP: ip, Risk: Whitelist, Reason: "Whitelisted", ConfirmedBy: "Local"}
 				continue Loop
 			}
 		}
-		records[i] = IPRecord{IP: ip, Risk: 1, ConfirmedBy: "Local"}
+		records[i] = IPRecord{IP: ip, Risk: Safe, ConfirmedBy: "Local"}
 	}
 	return records
 }
