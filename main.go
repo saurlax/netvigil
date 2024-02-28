@@ -176,7 +176,7 @@ func database() {
 }
 
 func webservice() {
-	staticHandler := http.FileServer(http.Dir("public"))
+	staticHandler := http.FileServer(http.Dir("static"))
 	ipRecordHandler := func(w http.ResponseWriter, r *http.Request) {
 		var records []tix.IPRecord
 		iter := db.NewIterator(nil, nil)
@@ -192,8 +192,8 @@ func webservice() {
 		json.NewEncoder(w).Encode(records)
 	}
 	http.Handle("/", staticHandler)
-	http.HandleFunc("/iprecords", ipRecordHandler)
-	log.Printf("Serber started at http://localhost:%d\n", config.Port)
+	http.HandleFunc("/api/iprecords", ipRecordHandler)
+	log.Printf("Server started at http://localhost:%d\n", config.Port)
 	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)
 }
 
@@ -204,7 +204,6 @@ func init() {
 }
 
 func main() {
-	log.Println("Service started")
 	go capture()
 	check()
 	defer db.Close()

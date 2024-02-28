@@ -15,6 +15,7 @@ type ThreatBook struct {
 
 type ThreatBookResult struct {
 	ResponseCode int                           `json:"response_code"`
+	VerBoseMsg   string                        `json:"verbose_msg"`
 	IPs          map[string]ThreatBookResultIP `json:"ips"`
 }
 
@@ -51,7 +52,7 @@ func request(apikey string, resource []string) []IPRecord {
 		return records
 	}
 	if result.ResponseCode != 0 {
-		log.Println("[Threatbook] Abnormal response code:", result.ResponseCode)
+		log.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
 	}
 	for k, v := range result.IPs {
 		var risk Risk

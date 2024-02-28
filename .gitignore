@@ -15,4 +15,5 @@
 go.work
 
 /db
+/static
 /config.yml
