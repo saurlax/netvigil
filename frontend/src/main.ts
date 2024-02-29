@@ -7,10 +7,16 @@ import Iprecords from './pages/iprecords.vue'
 
 import 'element-plus/dist/index.css'
 import './style.css'
+import Tix from './pages/tix.vue'
+import Login from './pages/login.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [{
+    path: '/login',
+    component: Login,
+    name: 'login'
+  }, {
     path: '/',
     component: Index,
     name: 'home'
@@ -18,6 +24,10 @@ const router = createRouter({
     path: '/iprecords',
     component: Iprecords,
     name: 'iprecords'
+  }, {
+    path: '/tix',
+    component: Tix,
+    name: 'tix'
   }]
 })
 

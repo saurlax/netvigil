@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElScrollbar, } from 'element-plus'
-import { RouterView, useRouter } from 'vue-router'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const navigate = (dest: string) => {
   router.push({ name: dest })
@@ -10,13 +11,15 @@ const navigate = (dest: string) => {
 </script>
 
 <template>
-  <ElContainer class="container">
-    <ElAside class="aside">
+  <RouterView v-if="route.name == 'login'" />
+  <ElContainer v-else class=" wrapper">
+    <ElAside>
       <ElScrollbar>
         <div class="logo"></div>
-        <ElMenu :default-active="router.currentRoute.value.name?.toString()" @select="navigate">
+        <ElMenu :default-active="route.name?.toString()" @select="navigate">
           <ElMenuItem index="home">Home</ElMenuItem>
           <ElMenuItem index="iprecords">IP Records</ElMenuItem>
+          <ElMenuItem index="tix">TIX</ElMenuItem>
         </ElMenu>
       </ElScrollbar>
     </ElAside>
@@ -29,14 +32,14 @@ const navigate = (dest: string) => {
 </template>
 
 <style scoped>
-.container {
+.wrapper {
   height: 100vh;
 }
 
-.aside {
+.el-aside {
   --el-aside-width: 180px;
   --el-menu-bg-color: trasnparent;
-  background-color: #e9eef8;
+  background-image: linear-gradient(to bottom right, #e2eefb, #b9cfe5);
 }
 
 .logo {
@@ -57,12 +60,12 @@ const navigate = (dest: string) => {
   height: 50px;
   line-height: initial;
   border-radius: 4px;
-  box-shadow: 0 0 1px #fdfdfd;
+  box-shadow: 0 0 1px #e3e3e3;
   border: 2px solid transparent;
 }
 
 .el-menu-item:not(:hover) {
-  background-color: #fafbff;
+  background-color: #ffffff88;
 }
 
 .el-menu-item.is-active {
