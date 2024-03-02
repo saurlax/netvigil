@@ -176,6 +176,7 @@ func database() {
 }
 
 func webservice() {
+	// TODO: use gin-gonic/gin
 	staticHandler := http.FileServer(http.Dir("static"))
 	ipRecordHandler := func(w http.ResponseWriter, r *http.Request) {
 		var records []tix.IPRecord
