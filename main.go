@@ -31,15 +31,6 @@ package main
 // 	Pid        int
 // }
 
-// type Config struct {
-// 	CaptureInterval int            `yaml:"capture_interval"`
-// 	CheckInterval   int            `yaml:"check_interval"`
-// 	Buffer          int            `yaml:"buffer"`
-// 	Port            int            `yaml:"port"`
-// 	Local           tix.Local      `yaml:"local"`
-// 	ThreatBook      tix.ThreatBook `yaml:"threatbook"`
-// }
-
 // func capture() {
 // 	accepted := func(s *netstat.SockTabEntry) bool {
 // 		return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
@@ -212,4 +203,5 @@ package main
 
 func main() {
 	// println(util.A)
+
 }

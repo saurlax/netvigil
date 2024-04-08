@@ -2,7 +2,6 @@ package util
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"time"
 
@@ -10,7 +9,7 @@ import (
 	"github.com/keybase/go-ps"
 )
 
-type NetStat struct {
+type Netstat struct {
 	LocalAddr  net.IP
 	LocalPort  uint16
 	RemoteAddr net.IP
@@ -20,59 +19,49 @@ type NetStat struct {
 	Pid        int
 }
 
-var NetstatCh chan NetStat
+var NetstatCh chan Netstat
+
+var filter = func(s *netstat.SockTabEntry) bool {
+	return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
+}
 
 func capture() {
-	accepted := func(s *netstat.SockTabEntry) bool {
-		return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
-	}
-	for {
-		var err error
-		time.Sleep(time.Duration(config.CaptureInterval) * time.Second)
-		tcps, err := netstat.TCPSocks(accepted)
-		if err != nil {
-			log.Println("Failed to get tcp socks", err)
-		}
-		tcp6s, err := netstat.TCP6Socks(accepted)
-		if err != nil {
-			log.Println("Failed to get tcp6 socks", err)
-		}
-		udps, err := netstat.UDPSocks(accepted)
-		if err != nil {
-			log.Println("Failed to get udp socks", err)
-		}
-		udp6s, err := netstat.UDP6Socks(accepted)
-		if err != nil {
-			log.Println("Failed to get udp6 socks", err)
-		}
-		tabs := append(append(append(tcps, tcp6s...), udps...), udp6s...)
-		log.Println("Captured", len(tabs), "sockets")
-	Loop:
-		for _, e := range tabs {
-			proc, err := ps.FindProcess(int(e.Process.Pid))
-			if err != nil {
-				fmt.Println("Failed to determine process:", err)
-				continue
-			}
-			path, _ := proc.Path()
+	tcps, _ := netstat.TCPSocks(filter)
+	tcp6s, _ := netstat.TCP6Socks(filter)
+	udps, _ := netstat.UDPSocks(filter)
+	udp6s, _ := netstat.UDP6Socks(filter)
 
-			select {
-			case sockets <- NetStatData{
-				LocalAddr:  e.LocalAddr.IP,
-				LocalPort:  e.LocalAddr.Port,
-				RemoteAddr: e.RemoteAddr.IP,
-				RemotePort: e.RemoteAddr.Port,
-				ExeName:    e.Process.Name,
-				Pid:        e.Process.Pid,
-				// ExePath:    path,
-			}:
-			default:
-				break Loop
-			}
+	tabs := append(append(append(tcps, tcp6s...), udps...), udp6s...)
+	fmt.Println("Captured %d sockets", len(tabs))
+
+	for _, e := range tabs {
+		proc, err := ps.FindProcess(e.Process.Pid)
+		path := ""
+		if err == nil {
+			path, err = proc.Path()
+		}
+		select {
+		case NetstatCh <- Netstat{
+			LocalAddr:  e.LocalAddr.IP,
+			LocalPort:  e.LocalAddr.Port,
+			RemoteAddr: e.RemoteAddr.IP,
+			RemotePort: e.RemoteAddr.Port,
+			ExeName:    e.Process.Name,
+			Pid:        e.Process.Pid,
+			ExePath:    path,
+		}:
+		default:
+			// break when channel is full
+			return
 		}
 	}
 }
 
 func init() {
-	println("init")
+	go func() {
+		for {
+			time.Sleep(time.Duration(Config.CaptureInterval) * time.Second)
+			capture()
+		}
+	}()
 }
