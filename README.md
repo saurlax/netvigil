@@ -19,5 +19,8 @@ Then, build go project
 $ go build .
 ```
 
-## API
+## APIs
 
+| Path       | Method | Request | Response | Description |
+| ---------- | ------ | ------- | -------- | ----------- |
+| `/records` | GET    |         | Record[] |             |
