@@ -11,7 +11,7 @@ type NetVigilConfig struct {
 	CaptureInterval int            `yaml:"capture_interval"`
 	CheckInterval   int            `yaml:"check_interval"`
 	Buffer          int            `yaml:"buffer"`
-	Port            int            `yaml:"port"`
+	Web             string         `yaml:"web"`
 	Local           tix.Local      `yaml:"local"`
 	ThreatBook      tix.ThreatBook `yaml:"threatbook"`
 }
