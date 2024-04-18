@@ -14,6 +14,6 @@
 # Go workspace file
 go.work
 
-/db
+*.db
 /static
 /config.yml

@@ -1,4 +1,4 @@
-package main
+// package main
 
 // import (
 // 	"encoding/json"
@@ -201,7 +201,12 @@ package main
 // 	defer db.Close()
 // }
 
-func main() {
-	// println(util.A)
+package main
 
+import (
+	"github.com/saurlax/net-vigil/util"
+)
+
+func main() {
+	defer util.DB.Close()
 }
