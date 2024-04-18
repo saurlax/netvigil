@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var r *gin.Engine
+
 func recordsHandler(c *gin.Context) {
 	var err error
 	page, err := strconv.Atoi(c.Param("page"))
@@ -27,7 +29,7 @@ func recordsHandler(c *gin.Context) {
 
 func init() {
 	gin.SetMode(gin.ReleaseMode)
-	r := gin.Default()
+	r = gin.Default()
 	r.Use(func(ctx *gin.Context) {
 		path := ctx.Request.URL.Path
 		switch path {
@@ -44,6 +46,9 @@ func init() {
 			}
 		}
 	})
+}
+
+func Run() {
 	fmt.Printf("Web server started on http://%s/\n", Config.Web)
-	go r.Run(fmt.Sprintf(Config.Web))
+	r.Run(fmt.Sprintf(Config.Web))
 }

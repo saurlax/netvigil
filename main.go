@@ -5,5 +5,6 @@ import (
 )
 
 func main() {
+	util.Run()
 	defer util.DB.Close()
 }
