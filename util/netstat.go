@@ -20,9 +20,9 @@ func capture() {
 	udps, _ := netstat.UDPSocks(filter)
 	udp6s, _ := netstat.UDP6Socks(filter)
 
-	tabs := append(append(append(tcps, tcp6s...), udps...), udp6s...)
+	entries := append(append(append(tcps, tcp6s...), udps...), udp6s...)
 
-	for _, e := range tabs {
+	for _, e := range entries {
 		proc, err := ps.FindProcess(e.Process.Pid)
 		if err == nil {
 			path, err := proc.Path()
@@ -42,7 +42,7 @@ func capture() {
 func init() {
 	go func() {
 		for {
-			time.Sleep(time.Duration(viper.GetFloat64("capture_interval")) * time.Second)
+			time.Sleep(viper.GetDuration("capture_interval"))
 			capture()
 		}
 	}()

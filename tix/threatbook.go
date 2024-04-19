@@ -7,6 +7,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+
+	"github.com/saurlax/net-vigil/util"
 )
 
 type ThreatBook struct {
@@ -29,8 +31,8 @@ type ThreatBookResultIPASN struct {
 	Info string `json:"info"`
 }
 
-func request(apikey string, resource []string) []IPRecord {
-	var records []IPRecord
+func request(apikey string, resource []string) []util.Record {
+	var records []util.Record
 	res, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
 		"apikey":   {apikey},
 		"resource": resource,
@@ -55,51 +57,50 @@ func request(apikey string, resource []string) []IPRecord {
 		log.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
 	}
 	for k, v := range result.IPs {
-		var risk Risk
+		var risk util.RiskLevel
 		switch v.Severity {
 		case "info":
-			risk = Safe
+			risk = util.Safe
 		case "low":
-			risk = Low
+			risk = util.Unknown
 		case "medium":
-			risk = Suspicious
+			risk = util.Suspicious
 		case "high", "critical":
-			risk = Malicious
+			risk = util.Malicious
 		default:
-			risk = Safe
+			risk = util.Safe
 		}
-		records = append(records, IPRecord{
-			IP:          net.ParseIP(k),
-			Risk:        risk,
-			Reason:      v.Judgments,
-			Description: v.ASN.Info,
-			ConfirmedBy: "Threatbook",
+		records = append(records, util.Record{
+			RemoteAddr: net.ParseIP(k).String(),
+			Risk:       risk,
+			Reason:     v.Judgments,
+			Location:   v.ASN.Info,
 		})
 	}
 	return records
 }
 
-func (t *ThreatBook) CheckIPs(ips []net.IP) []IPRecord {
-	records := make([]IPRecord, len(ips))
+func (t *ThreatBook) Check(ips []net.IP) []util.Record {
+	records := make([]util.Record, len(ips))
 	var resource []string
 	for _, v := range ips {
 		if !v.IsPrivate() {
 			resource = append(resource, v.String())
 		}
 	}
-	var result []IPRecord
+	var result []util.Record
 	if t.APIKey != "" {
 		result = request(t.APIKey, resource)
 	}
 Loop:
 	for i, ip := range ips {
 		for _, v := range result {
-			if v.IP.Equal(ip) {
+			if v.RemoteAddr == ip.String() {
 				records[i] = v
 				continue Loop
 			}
 		}
-		records[i] = IPRecord{IP: ip, Risk: Safe, ConfirmedBy: "Threatbook"}
+		records[i] = util.Record{RemoteAddr: ip.String(), Risk: util.Safe, TIX: "Threatbook"}
 	}
 	return records
 }
