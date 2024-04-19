@@ -5,6 +5,7 @@ import (
 
 	"github.com/cakturk/go-netstat/netstat"
 	"github.com/keybase/go-ps"
+	"github.com/spf13/viper"
 )
 
 var NetstatCh chan netstat.SockTabEntry
@@ -41,7 +42,7 @@ func capture() {
 func init() {
 	go func() {
 		for {
-			time.Sleep(time.Duration(Config.CaptureInterval) * time.Second)
+			time.Sleep(time.Duration(viper.GetFloat64("capture_interval")) * time.Second)
 			capture()
 		}
 	}()

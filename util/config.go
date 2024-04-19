@@ -1,24 +1,13 @@
 package util
 
 import (
-	"os"
-
-	"github.com/saurlax/net-vigil/tix"
-	"gopkg.in/yaml.v3"
+	"github.com/spf13/viper"
 )
 
-type NetVigilConfig struct {
-	CaptureInterval int            `yaml:"capture_interval"`
-	CheckInterval   int            `yaml:"check_interval"`
-	Buffer          int            `yaml:"buffer"`
-	Web             string         `yaml:"web"`
-	Local           tix.Local      `yaml:"local"`
-	ThreatBook      tix.ThreatBook `yaml:"threatbook"`
-}
-
-var Config NetVigilConfig
-
 func init() {
-	data, _ := os.ReadFile("config.yml")
-	yaml.Unmarshal(data, &Config)
+	viper.SetConfigFile("config.toml")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
 }

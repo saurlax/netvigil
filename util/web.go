@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var r *gin.Engine
@@ -49,6 +50,7 @@ func init() {
 }
 
 func Run() {
-	fmt.Printf("Web server started on http://%s/\n", Config.Web)
-	r.Run(fmt.Sprintf(Config.Web))
+	addr := viper.GetString("web")
+	fmt.Printf("Web server started on http://%s/\n", addr)
+	r.Run(addr)
 }
