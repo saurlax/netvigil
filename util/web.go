@@ -9,8 +9,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var r *gin.Engine
-
 func recordsHandler(c *gin.Context) {
 	var err error
 	page, err := strconv.Atoi(c.Param("page"))
@@ -29,8 +27,9 @@ func recordsHandler(c *gin.Context) {
 }
 
 func init() {
+	addr := viper.GetString("web")
 	gin.SetMode(gin.ReleaseMode)
-	r = gin.Default()
+	r := gin.Default()
 	r.Use(func(ctx *gin.Context) {
 		path := ctx.Request.URL.Path
 		switch path {
@@ -47,10 +46,6 @@ func init() {
 			}
 		}
 	})
-}
-
-func Run() {
-	addr := viper.GetString("web")
 	fmt.Printf("Web server started on http://%s/\n", addr)
-	r.Run(addr)
+	go r.Run(addr)
 }

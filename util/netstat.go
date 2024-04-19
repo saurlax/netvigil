@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var NetstatCh chan netstat.SockTabEntry
+var NetstatCh = make(chan netstat.SockTabEntry, 1000)
 
 var filter = func(s *netstat.SockTabEntry) bool {
 	return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
@@ -21,7 +21,7 @@ func capture() {
 	udp6s, _ := netstat.UDP6Socks(filter)
 
 	entries := append(append(append(tcps, tcp6s...), udps...), udp6s...)
-
+	println(len(entries))
 	for _, e := range entries {
 		proc, err := ps.FindProcess(e.Process.Pid)
 		if err == nil {

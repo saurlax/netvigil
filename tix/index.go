@@ -1,26 +1,29 @@
 package tix
 
 import (
-	"net"
 	"time"
 
+	"github.com/cakturk/go-netstat/netstat"
 	"github.com/saurlax/net-vigil/util"
 	"github.com/spf13/viper"
 )
 
 // Threat Intelligence Center
 type TIX interface {
-	Check(ips []net.IP) []util.Record
+	Check(netstats []netstat.SockTabEntry) []util.Record
 }
 
 var tixs = make([]TIX, 0)
 
-func Create(options map[string]any) TIX {
-	switch options["type"] {
+func Create(m map[string]any) TIX {
+	switch m["type"] {
 	case "local":
+		blacklist := make([]string, 0)
+		for _, v := range m["blacklist"].([]any) {
+			blacklist = append(blacklist, v.(string))
+		}
 		return &Local{
-			Blacklist: options["blacklist"].([]net.IP),
-			Whitelist: options["whitelist"].([]net.IP),
+			Blacklist: blacklist,
 		}
 	case "threatbook":
 		// TODO
@@ -31,28 +34,37 @@ func Create(options map[string]any) TIX {
 }
 
 func cheak() {
+	entries := make([]netstat.SockTabEntry, 0)
+Loop:
 	for {
 		select {
 		case e := <-util.NetstatCh:
-			println(e.RemoteAddr)
+			entries = append(entries, e)
 		default:
-			return
+			break Loop
+		}
+	}
+	for _, tix := range tixs {
+		records := tix.Check(entries)
+		for _, record := range records {
+			record.Save()
 		}
 	}
 }
 
 func init() {
-	config := viper.Get("tix").([]map[string]any)
+	config := viper.Get("tix").([]any)
 	for _, v := range config {
-		tix := Create(v)
+		tix := Create(v.(map[string]any))
 		if tix != nil {
 			tixs = append(tixs, tix)
 		}
 	}
-	go func() {
-		for {
-			time.Sleep(viper.GetDuration("check_interval"))
-			cheak()
-		}
-	}()
+}
+
+func Run() {
+	for {
+		time.Sleep(viper.GetDuration("check_interval"))
+		cheak()
+	}
 }

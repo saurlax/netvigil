@@ -1,16 +1,15 @@
 package tix
 
 import (
-	"net"
-
+	"github.com/cakturk/go-netstat/netstat"
 	"github.com/saurlax/net-vigil/util"
 )
 
 type Local struct {
-	Blacklist []net.IP `yaml:"blacklist"`
-	Whitelist []net.IP `yaml:"whitelist"`
+	Blacklist []string
+	Whitelist []string
 }
 
-func (t *Local) Check(ips []net.IP) []util.Record {
+func (t *Local) Check(netstats []netstat.SockTabEntry) []util.Record {
 	return nil
 }
