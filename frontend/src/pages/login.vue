@@ -16,7 +16,7 @@ const submit = async () => {
     sessionStorage.setItem('user', JSON.stringify(data))
     user.value = data
     ElMessage.success('Login Successfully!')
-    router.push('home')
+    router.push('/')
   }).catch(err => {
     ElMessage.error(err.response.data.error)
   })

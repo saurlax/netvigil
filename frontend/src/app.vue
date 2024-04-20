@@ -12,14 +12,20 @@ const logout = () => {
   ElMessageBox.confirm('Are you sure you want to logout?').then(() => {
     sessionStorage.removeItem('user')
     user.value = null
-    router.push('login')
+    router.push('/login')
   })
 }
 
 onMounted(async () => {
   user.value = sessionStorage.getItem('user')
-  if (!user.value) router.push('login')
-  axios.get('/api/records').then(res => { records.value = res.data })
+  if (!user.value) router.push('/login')
+  axios.get('/api/records').then(res => {
+    const data = res.data
+    data.forEach((record: any) => {
+      record.Time = new Date(record.Time).toLocaleString()
+    })
+    records.value = data
+  })
 })
 
 const navigate = (name: string) => {

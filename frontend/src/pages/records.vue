@@ -6,6 +6,7 @@ import { records } from '../store'
 
 <template>
   <ElTable :data="records" stripe>
+    <ElTableColumn prop="Time" label="Time"></ElTableColumn>
     <ElTableColumn prop="LocalAddr" label="Local Address"></ElTableColumn>
     <ElTableColumn prop="RemoteAddr" label="Remote Address" sortable></ElTableColumn>
     <ElTableColumn prop="TIX" label="TIX" sortable></ElTableColumn>
