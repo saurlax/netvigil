@@ -37,7 +37,6 @@ func init() {
 			recordsHandler(ctx)
 		default:
 			path = "static" + path
-			println(path)
 			_, err := os.Stat(path)
 			if err == nil {
 				ctx.File(path)

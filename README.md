@@ -44,7 +44,7 @@ type Record struct {
 ```
 
 ```go
-type SockTabEntry struct {
+type netstat.SockTabEntry struct {
   ino        string
   LocalAddr  *SockAddr
   RemoteAddr *SockAddr

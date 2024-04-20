@@ -1,6 +1,7 @@
 package tix
 
 import (
+	"fmt"
 	"net"
 	"time"
 
@@ -48,7 +49,10 @@ Loop:
 	for _, tix := range tixs {
 		records := tix.Check(entries)
 		for _, record := range records {
-			record.Save()
+			err := record.Save()
+			if err != nil {
+				fmt.Println(err)
+			}
 		}
 	}
 }

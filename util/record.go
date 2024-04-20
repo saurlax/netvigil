@@ -60,9 +60,6 @@ func (r Record) Save() error {
 		fmt.Printf("\x1B[31mMalicious threat detected: %s —▸ %s\x1B[0m\n", r.Executable, r.RemoteAddr)
 	}
 	_, err := DB.Exec("INSERT INTO records (local_addr, remote_addr, tix, location, reason, executable, risk, confidence) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", r.LocalAddr, r.RemoteAddr, r.TIX, r.Location, r.Reason, r.Executable, r.Risk, r.Confidence)
-	if err != nil {
-		fmt.Println(err)
-	}
 	return err
 }
 

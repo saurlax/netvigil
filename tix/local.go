@@ -19,7 +19,6 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []util.Record {
 	for _, e := range netstats {
 		for _, banned := range t.Blacklist {
 			if e.RemoteAddr.IP.Equal(banned) {
-				println("checking", e.RemoteAddr.IP.String(), banned.String())
 				records = append(records, util.Record{
 					LocalAddr:  e.LocalAddr.String(),
 					RemoteAddr: e.RemoteAddr.String(),
