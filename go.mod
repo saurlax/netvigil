@@ -1,4 +1,4 @@
-module github.com/saurlax/net-vigil
+module github.com/saurlax/netvigil
 
 go 1.21.6
 

@@ -1,4 +1,4 @@
-package util
+package netvigil
 
 import (
 	"github.com/spf13/viper"

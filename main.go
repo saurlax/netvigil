@@ -1,11 +1,11 @@
 package main
 
 import (
-	"github.com/saurlax/net-vigil/tix"
-	"github.com/saurlax/net-vigil/util"
+	"github.com/saurlax/netvigil/netvigil"
+	"github.com/saurlax/netvigil/tix"
 )
 
 func main() {
-	defer util.DB.Close()
+	defer netvigil.DB.Close()
 	tix.Run()
 }

@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/saurlax/net-vigil/util"
+	"github.com/saurlax/netvigil/netvigil"
 )
 
 type ThreatBook struct {
@@ -31,8 +31,8 @@ type ThreatBookResultIPASN struct {
 	Info string `json:"info"`
 }
 
-func request(apikey string, resource []string) []util.Record {
-	var records []util.Record
+func request(apikey string, resource []string) []netvigil.Record {
+	var records []netvigil.Record
 	res, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
 		"apikey":   {apikey},
 		"resource": resource,
@@ -57,20 +57,20 @@ func request(apikey string, resource []string) []util.Record {
 		log.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
 	}
 	for k, v := range result.IPs {
-		var risk util.RiskLevel
+		var risk netvigil.RiskLevel
 		switch v.Severity {
 		case "info":
-			risk = util.Safe
+			risk = netvigil.Safe
 		case "low":
-			risk = util.Unknown
+			risk = netvigil.Unknown
 		case "medium":
-			risk = util.Suspicious
+			risk = netvigil.Suspicious
 		case "high", "critical":
-			risk = util.Malicious
+			risk = netvigil.Malicious
 		default:
-			risk = util.Safe
+			risk = netvigil.Safe
 		}
-		records = append(records, util.Record{
+		records = append(records, netvigil.Record{
 			RemoteAddr: net.ParseIP(k).String(),
 			Risk:       risk,
 			Reason:     v.Judgments,
@@ -80,15 +80,15 @@ func request(apikey string, resource []string) []util.Record {
 	return records
 }
 
-func (t *ThreatBook) Check(ips []net.IP) []util.Record {
-	records := make([]util.Record, len(ips))
+func (t *ThreatBook) Check(ips []net.IP) []netvigil.Record {
+	records := make([]netvigil.Record, len(ips))
 	var resource []string
 	for _, v := range ips {
 		if !v.IsPrivate() {
 			resource = append(resource, v.String())
 		}
 	}
-	var result []util.Record
+	var result []netvigil.Record
 	if t.APIKey != "" {
 		result = request(t.APIKey, resource)
 	}
@@ -100,7 +100,7 @@ Loop:
 				continue Loop
 			}
 		}
-		records[i] = util.Record{RemoteAddr: ip.String(), Risk: util.Safe, TIX: "Threatbook"}
+		records[i] = netvigil.Record{RemoteAddr: ip.String(), Risk: netvigil.Safe, TIX: "Threatbook"}
 	}
 	return records
 }
