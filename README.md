@@ -41,6 +41,20 @@ type Record struct {
 	Risk       RiskLevel
 	Confidence ConfidenceLevel
 }
+
+const (
+	Unknown RiskLevel = iota
+	Safe
+	Normal
+	Suspicious
+	Malicious
+)
+
+const (
+	Low ConfidenceLevel = iota
+	Medium
+	High
+)
 ```
 
 ```go

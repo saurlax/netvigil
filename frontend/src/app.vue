@@ -1,25 +1,30 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElScrollbar, } from 'element-plus'
+import { onMounted } from 'vue'
+import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
+import axios from 'axios'
+import { user, records } from './store'
 
-const router = useRouter()
 const route = useRoute()
-const user = ref()
-
-const navigate = (dest: string) => {
-  router.push({ name: dest })
-}
+const router = useRouter()
 
 const logout = () => {
-  sessionStorage.removeItem('user')
+  ElMessageBox.confirm('Are you sure you want to logout?').then(() => {
+    sessionStorage.removeItem('user')
+    user.value = null
+    router.push('login')
+  })
 }
 
-onMounted(() => {
+onMounted(async () => {
   user.value = sessionStorage.getItem('user')
-  if (!user.value) navigate('login')
+  if (!user.value) router.push('login')
+  axios.get('/api/records').then(res => { records.value = res.data })
 })
 
+const navigate = (name: string) => {
+  router.push({ name })
+}
 </script>
 
 <template>
@@ -32,7 +37,7 @@ onMounted(() => {
           <ElMenuItem index="home">Home</ElMenuItem>
           <ElMenuItem index="records">Records</ElMenuItem>
           <ElMenuItem index="tix">TIX</ElMenuItem>
-          <ElMenuItem v-if="user" index="login" @click="logout">Logout</ElMenuItem>
+          <ElMenuItem v-if="user" @click="logout">Logout</ElMenuItem>
         </ElMenu>
       </ElScrollbar>
     </ElAside>
@@ -67,6 +72,7 @@ onMounted(() => {
 
 .el-menu {
   border: none;
+  user-select: none;
 }
 
 .el-menu-item {

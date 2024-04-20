@@ -1,20 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import axios from 'axios'
 import { ElTable, ElTableColumn } from 'element-plus'
+import { records } from '../store'
 
-const data = ref([])
-
-const update = async () => {
-  const res = await axios.get('/api/records')
-  data.value = res.data
-}
-
-onMounted(update)
 </script>
 
 <template>
-  <ElTable :data="data" stripe>
+  <ElTable :data="records" stripe>
     <ElTableColumn prop="LocalAddr" label="Local Address"></ElTableColumn>
     <ElTableColumn prop="RemoteAddr" label="Remote Address" sortable></ElTableColumn>
     <ElTableColumn prop="TIX" label="TIX" sortable></ElTableColumn>

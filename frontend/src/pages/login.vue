@@ -2,19 +2,23 @@
 import axios from 'axios'
 import { ElButton, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
 import { reactive } from 'vue'
+import { user } from '../store'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const form = reactive({
   username: '',
   password: '',
 })
 
 const submit = async () => {
-  axios.postForm('/api/login', form).then(user => {
-    sessionStorage.setItem('user', JSON.stringify(user))
+  axios.postForm('/api/login', form).then(data => {
+    sessionStorage.setItem('user', JSON.stringify(data))
+    user.value = data
     ElMessage.success('Login Successfully!')
-    window.location.href = '/'
+    router.push('home')
   }).catch(err => {
-    ElMessage.error(err)
+    ElMessage.error(err.response.data.error)
   })
 }
 </script>
@@ -29,7 +33,7 @@ const submit = async () => {
         <ElInput v-model="form.username" placeholder="username" />
       </ElFormItem>
       <ElFormItem>
-        <ElInput v-model="form.password" placeholder="password" />
+        <ElInput v-model="form.password" placeholder="password" type="password" />
       </ElFormItem>
       <ElButton type="primary" native-type="submit">Login</ElButton>
     </ElForm>
