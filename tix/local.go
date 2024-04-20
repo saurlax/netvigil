@@ -2,6 +2,7 @@ package tix
 
 import (
 	"net"
+	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
 	"github.com/saurlax/netvigil/netvigil"
@@ -20,6 +21,7 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 		for _, banned := range t.Blacklist {
 			if e.RemoteAddr.IP.Equal(banned) {
 				records = append(records, netvigil.Record{
+					Time:       time.Now().UnixMilli(),
 					LocalAddr:  e.LocalAddr.String(),
 					RemoteAddr: e.RemoteAddr.String(),
 					TIX:        "Local",

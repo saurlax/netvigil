@@ -49,6 +49,7 @@ Loop:
 	for _, tix := range tixs {
 		records := tix.Check(entries)
 		for _, record := range records {
+			record.Action()
 			err := record.Save()
 			if err != nil {
 				fmt.Println(err)
