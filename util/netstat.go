@@ -24,7 +24,7 @@ func capture() {
 
 	for _, e := range entries {
 		proc, err := ps.FindProcess(e.Process.Pid)
-		if err == nil {
+		if err == nil && proc != nil {
 			path, err := proc.Path()
 			if err == nil {
 				e.Process.Name = path

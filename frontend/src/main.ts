@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './app.vue'
 import ElementPlus from 'element-plus'
 import Index from './pages/index.vue'
-import Iprecords from './pages/iprecords.vue'
+import Records from './pages/records.vue'
 
 import 'element-plus/dist/index.css'
 import './style.css'
@@ -21,9 +21,9 @@ const router = createRouter({
     component: Index,
     name: 'home'
   }, {
-    path: '/iprecords',
-    component: Iprecords,
-    name: 'iprecords'
+    path: '/records',
+    component: Records,
+    name: 'records'
   }, {
     path: '/tix',
     component: Tix,

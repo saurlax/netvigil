@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -83,10 +84,22 @@ func GetRecordsByRemoteAddr(remoteAddr string) ([]*Record, error) {
 }
 
 func GetSortedRecords(sortBy string, limit int, page int) ([]*Record, error) {
-	if sortBy != "remote_addr" && sortBy != "tix" && sortBy != "risk" && sortBy != "confidence" {
+	accepted := []string{"id", "remote_addr", "tix", "risk", "confidence"}
+	matched := false
+	sortBy = strings.ToLower(sortBy)
+	if sortBy == "" {
+		sortBy = "id"
+	}
+	for _, a := range accepted {
+		if a == sortBy {
+			matched = true
+			break
+		}
+	}
+	if !matched {
 		return nil, errors.New("invalid sort key")
 	}
-	rows, err := DB.Query("SELECT id, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records ORDER BY "+sortBy+" LIMIT ? OFFSET ?", limit, limit*(page-1))
+	rows, err := DB.Query("SELECT local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records ORDER BY "+sortBy+" LIMIT ? OFFSET ?", limit, limit*(page-1))
 	if err != nil {
 		return nil, err
 	}

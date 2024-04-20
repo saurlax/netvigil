@@ -13,17 +13,14 @@ func recordsHandler(c *gin.Context) {
 	var err error
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
-		c.JSON(200, gin.H{
-			"error": "Invalid page number"})
+		page = 0
 	}
 	records, err := GetSortedRecords(c.Param("key"), 100, page)
 	if err != nil {
-		c.JSON(200, gin.H{
+		c.JSON(500, gin.H{
 			"error": err.Error()})
 	}
-	c.JSON(200, gin.H{
-		"records": records,
-	})
+	c.JSON(200, records)
 }
 
 func init() {

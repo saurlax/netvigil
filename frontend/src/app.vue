@@ -18,7 +18,7 @@ const navigate = (dest: string) => {
         <div class="logo"></div>
         <ElMenu :default-active="route.name?.toString()" @select="navigate">
           <ElMenuItem index="home">Home</ElMenuItem>
-          <ElMenuItem index="iprecords">IP Records</ElMenuItem>
+          <ElMenuItem index="records">Records</ElMenuItem>
           <ElMenuItem index="tix">TIX</ElMenuItem>
         </ElMenu>
       </ElScrollbar>
