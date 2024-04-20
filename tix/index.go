@@ -1,6 +1,7 @@
 package tix
 
 import (
+	"net"
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
@@ -18,9 +19,9 @@ var tixs = make([]TIX, 0)
 func Create(m map[string]any) TIX {
 	switch m["type"] {
 	case "local":
-		blacklist := make([]string, 0)
+		blacklist := make([]net.IP, 0)
 		for _, v := range m["blacklist"].([]any) {
-			blacklist = append(blacklist, v.(string))
+			blacklist = append(blacklist, net.ParseIP(v.(string)))
 		}
 		return &Local{
 			Blacklist: blacklist,

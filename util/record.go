@@ -3,6 +3,7 @@ package util
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -11,12 +12,12 @@ type RiskLevel int
 type ConfidenceLevel int
 
 type Record struct {
-	ID         string
 	LocalAddr  string
 	RemoteAddr string
 	TIX        string
 	Location   string
 	Reason     string
+	Executable string
 	Risk       RiskLevel
 	Confidence ConfidenceLevel
 }
@@ -27,6 +28,9 @@ const (
 	Normal
 	Suspicious
 	Malicious
+)
+
+const (
 	Low ConfidenceLevel = iota
 	Medium
 	High
@@ -42,7 +46,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	DB.Exec("CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, local_addr TEXT, remote_addr TEXT, tix TEXT, location TEXT, reason TEXT, risk INTEGER, confidence INTEGER)")
+	DB.Exec("CREATE TABLE IF NOT EXISTS records (id TEXT PRIMARY KEY, local_addr TEXT, remote_addr TEXT, tix TEXT, location TEXT, reason TEXT, executable TEXT, risk INTEGER, confidence INTEGER)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_addr ON records (remote_addr)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_tix ON records (tix)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_risk ON records (risk)")
@@ -50,19 +54,20 @@ func init() {
 }
 
 func (r Record) Save() error {
-	_, err := DB.Exec("INSERT INTO records (id, local_addr, remote_addr, tix, location, reason, risk, confidence) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", r.ID, r.LocalAddr, r.RemoteAddr, r.TIX, r.Location, r.Reason, r.Risk, r.Confidence)
+	if r.Risk == Suspicious {
+		fmt.Printf("\x1B[33mSuspicious threat detected: %s —▸ %s\x1B[0m\n", r.Executable, r.RemoteAddr)
+	} else if r.Risk == Malicious {
+		fmt.Printf("\x1B[31mMalicious threat detected: %s —▸ %s\x1B[0m\n", r.Executable, r.RemoteAddr)
+	}
+	_, err := DB.Exec("INSERT INTO records (local_addr, remote_addr, tix, location, reason, executable, risk, confidence) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", r.LocalAddr, r.RemoteAddr, r.TIX, r.Location, r.Reason, r.Executable, r.Risk, r.Confidence)
+	if err != nil {
+		fmt.Println(err)
+	}
 	return err
 }
 
-func GetRecordByID(id string) (*Record, error) {
-	row := DB.QueryRow("SELECT local_addr, remote_addr, tix, location, reason, risk, confidence FROM records WHERE id = ?", id)
-	r := &Record{ID: id}
-	err := row.Scan(&r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Risk, &r.Confidence)
-	return r, err
-}
-
 func GetRecordsByRemoteAddr(remoteAddr string) ([]*Record, error) {
-	rows, err := DB.Query("SELECT id, local_addr, tix, location, reason, risk, confidence FROM records WHERE remote_addr = ?", remoteAddr)
+	rows, err := DB.Query("SELECT local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records WHERE remote_addr = ?", remoteAddr)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +76,7 @@ func GetRecordsByRemoteAddr(remoteAddr string) ([]*Record, error) {
 	var records []*Record
 	for rows.Next() {
 		r := &Record{RemoteAddr: remoteAddr}
-		err := rows.Scan(&r.ID, &r.LocalAddr, &r.TIX, &r.Location, &r.Reason, &r.Risk, &r.Confidence)
+		err := rows.Scan(&r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Executable, &r.Risk, &r.Confidence)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +89,7 @@ func GetSortedRecords(sortBy string, limit int, page int) ([]*Record, error) {
 	if sortBy != "remote_addr" && sortBy != "tix" && sortBy != "risk" && sortBy != "confidence" {
 		return nil, errors.New("invalid sort key")
 	}
-	rows, err := DB.Query("SELECT id, local_addr, remote_addr, tix, location, reason, risk, confidence FROM records ORDER BY "+sortBy+" LIMIT ? OFFSET ?", limit, limit*(page-1))
+	rows, err := DB.Query("SELECT id, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records ORDER BY "+sortBy+" LIMIT ? OFFSET ?", limit, limit*(page-1))
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +98,7 @@ func GetSortedRecords(sortBy string, limit int, page int) ([]*Record, error) {
 	var records []*Record
 	for rows.Next() {
 		r := &Record{}
-		err := rows.Scan(&r.ID, &r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Risk, &r.Confidence)
+		err := rows.Scan(&r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Executable, &r.Risk, &r.Confidence)
 		if err != nil {
 			return nil, err
 		}

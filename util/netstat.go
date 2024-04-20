@@ -21,7 +21,7 @@ func capture() {
 	udp6s, _ := netstat.UDP6Socks(filter)
 
 	entries := append(append(append(tcps, tcp6s...), udps...), udp6s...)
-	println(len(entries))
+
 	for _, e := range entries {
 		proc, err := ps.FindProcess(e.Process.Pid)
 		if err == nil {
