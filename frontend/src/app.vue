@@ -1,18 +1,38 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+const isLoggedIn = ref(false)
+
+const updateloginStatus = () => {
+  const user = sessionStorage.getItem('user');
+  isLoggedIn.value = !!user;
+  if(!isLoggedIn.value){
+    router.push({ path: '/login' })
+  }
+}
+
+const logout = () => {
+  sessionStorage.removeItem('user');
+  isLoggedIn.value = false
+  router.push({ name: 'login' }) // Navigate to login route on logout
+}
 
 const navigate = (dest: string) => {
   router.push({ name: dest })
 }
+
+onMounted(() => {
+  updateloginStatus();
+});
 </script>
 
 <template>
   <RouterView v-if="route.name == 'login'" />
-  <ElContainer v-else class=" wrapper">
+  <ElContainer v-else class="wrapper">
     <ElAside>
       <ElScrollbar>
         <div class="logo"></div>
@@ -20,6 +40,8 @@ const navigate = (dest: string) => {
           <ElMenuItem index="home">Home</ElMenuItem>
           <ElMenuItem index="iprecords">IP Records</ElMenuItem>
           <ElMenuItem index="tix">TIX</ElMenuItem>
+          <!-- <ElMenuItem v-if="!isLoggedIn" index="login" @click="login">Login</ElMenuItem> -->
+          <ElMenuItem v-if="isLoggedIn" index="logout" @click="logout">Logout</ElMenuItem>
         </ElMenu>
       </ElScrollbar>
     </ElAside>
@@ -30,6 +52,7 @@ const navigate = (dest: string) => {
     </ElMain>
   </ElContainer>
 </template>
+
 
 <style scoped>
 .wrapper {

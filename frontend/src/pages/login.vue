@@ -1,19 +1,45 @@
 <script setup lang="ts">
-import { ElButton, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
-import { reactive } from 'vue';
+  import axios from 'axios';
+  import { ElButton, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
+  import { reactive } from 'vue';
+  import { useRouter } from 'vue-router';
 
-const form = reactive({
-  username: '',
-  password: '',
-})
+  const form = reactive({
+    username: '',
+    password: '',
+  })
 
-const login = () => {
-  ElMessage.info(`username: ${form.username}, password: ${form.password}`)
-}
+  const router = useRouter();
+
+  const handleSubmit = async () => {
+    try {
+      // const res = await axios.postForm('/api/login', form);
+      // const response = res.data;
+      const response = await axios({
+        method: 'post',
+        url: '/api/login',
+        data: form,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+      });
+
+      if (response.status === 200) {
+        // const data = await response.json();
+        sessionStorage.setItem('user', JSON.stringify(response.data))
+        ElMessage.success('Login Successfully!');
+        router.push('/');
+      } else {
+        throw new Error('Login Failed!');
+      }
+    } catch (error) {
+      console.log(error);
+      const message = (error instanceof Error) ? error.message : 'Login failed';
+      ElMessage.error(message);
+    }
+  }
 </script>
 <template>
   <div class="wrapper">
-    <ElForm>
+    <ElForm @submit.prevent="handleSubmit">
       <ElFormItem>
         <img src="/logo.webp" alt="logo" />
       </ElFormItem>
@@ -23,32 +49,32 @@ const login = () => {
       <ElFormItem>
         <ElInput v-model="form.password" placeholder="password" />
       </ElFormItem>
-      <ElButton type="primary" @click="login">Login</ElButton>
+      <ElButton type="primary" native-type="submit">Login</ElButton>
     </ElForm>
   </div>
 </template>
 
 <style scoped>
-.wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-image: linear-gradient(to bottom right, #e2eefb, #b9cfe5);
-}
+  .wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: linear-gradient(to bottom right, #e2eefb, #b9cfe5);
+  }
 
-img {
-  width: 60%;
-  margin: auto;
-}
+  img {
+    width: 60%;
+    margin: auto;
+  }
 
-.el-form {
-  width: 240px;
-  padding: 20px;
-  border-radius: 4px;
-  background-color: #ffffff88;
-}
+  .el-form {
+    width: 240px;
+    padding: 20px;
+    border-radius: 4px;
+    background-color: #ffffff88;
+  }
 
-.el-button {
-  width: 100%;
-}
+  .el-button {
+    width: 100%;
+  }
 </style>
