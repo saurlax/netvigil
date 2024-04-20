@@ -1,18 +1,30 @@
 <script setup lang="ts">
+import { onMounted, ref } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
+const user = ref()
 
 const navigate = (dest: string) => {
   router.push({ name: dest })
 }
+
+const logout = () => {
+  sessionStorage.removeItem('user')
+}
+
+onMounted(() => {
+  user.value = sessionStorage.getItem('user')
+  if (!user.value) navigate('login')
+})
+
 </script>
 
 <template>
   <RouterView v-if="route.name == 'login'" />
-  <ElContainer v-else class=" wrapper">
+  <ElContainer v-else class="wrapper">
     <ElAside>
       <ElScrollbar>
         <div class="logo"></div>
@@ -20,6 +32,7 @@ const navigate = (dest: string) => {
           <ElMenuItem index="home">Home</ElMenuItem>
           <ElMenuItem index="records">Records</ElMenuItem>
           <ElMenuItem index="tix">TIX</ElMenuItem>
+          <ElMenuItem v-if="user" index="login" @click="logout">Logout</ElMenuItem>
         </ElMenu>
       </ElScrollbar>
     </ElAside>
@@ -30,6 +43,7 @@ const navigate = (dest: string) => {
     </ElMain>
   </ElContainer>
 </template>
+
 
 <style scoped>
 .wrapper {

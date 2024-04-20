@@ -1,19 +1,27 @@
 <script setup lang="ts">
+import axios from 'axios'
 import { ElButton, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
-import { reactive } from 'vue';
+import { reactive } from 'vue'
 
 const form = reactive({
   username: '',
   password: '',
 })
 
-const login = () => {
-  ElMessage.info(`username: ${form.username}, password: ${form.password}`)
+const submit = async () => {
+  axios.postForm('/api/login', form).then(user => {
+    sessionStorage.setItem('user', JSON.stringify(user))
+    ElMessage.success('Login Successfully!')
+    window.location.href = '/'
+  }).catch(err => {
+    ElMessage.error(err)
+  })
 }
 </script>
+
 <template>
   <div class="wrapper">
-    <ElForm>
+    <ElForm @submit.prevent="submit">
       <ElFormItem>
         <img src="/logo.webp" alt="logo" />
       </ElFormItem>
@@ -23,7 +31,7 @@ const login = () => {
       <ElFormItem>
         <ElInput v-model="form.password" placeholder="password" />
       </ElFormItem>
-      <ElButton type="primary" @click="login">Login</ElButton>
+      <ElButton type="primary" native-type="submit">Login</ElButton>
     </ElForm>
   </div>
 </template>
