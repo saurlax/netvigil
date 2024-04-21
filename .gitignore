@@ -15,6 +15,6 @@
 go.work
 
 *.db
-/static
-/config.yml
-/config.toml
+dist
+config.yml
+config.toml
