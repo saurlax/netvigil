@@ -1,0 +1,1 @@
+netsh advfirewall firewall delete rule name=all remoteip=76.223.126.88
