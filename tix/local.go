@@ -41,7 +41,7 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 			RemoteAddr: e.RemoteAddr.String(),
 			TIX:        "Local",
 			Executable: e.Process.Name,
-			Risk:       netvigil.Unknown,
+			Risk:       netvigil.Normal,
 			Confidence: netvigil.Medium,
 		})
 		i++

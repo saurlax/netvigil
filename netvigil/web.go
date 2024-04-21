@@ -14,20 +14,6 @@ import (
 
 var signKey = make([]byte, 32)
 
-func recordsHandler(c *gin.Context) {
-	var err error
-	page, err := strconv.Atoi(c.Param("page"))
-	if err != nil {
-		page = 0
-	}
-	records, err := GetSortedRecords(c.Param("key"), 100, page)
-	if err != nil {
-		c.JSON(500, gin.H{
-			"error": err.Error()})
-	}
-	c.JSON(200, records)
-}
-
 func loginHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -47,6 +33,19 @@ func loginHandler(c *gin.Context) {
 	} else {
 		c.JSON(401, gin.H{"error": "Invalid username or password"})
 	}
+}
+
+func recordsHandler(c *gin.Context) {
+	page, err := strconv.Atoi(c.Param("page"))
+	if err != nil {
+		page = 0
+	}
+	records, err := GetSortedRecords(c.Param("key"), 10000, page)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error": err.Error()})
+	}
+	c.JSON(200, records)
 }
 
 func init() {

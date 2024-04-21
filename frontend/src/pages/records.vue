@@ -5,7 +5,7 @@ import { records } from '../store'
 </script>
 
 <template>
-  <ElTable :data="records" stripe>
+  <ElTable :data="records.slice(0, 100)" stripe>
     <ElTableColumn prop="Time" label="Time"></ElTableColumn>
     <ElTableColumn prop="LocalAddr" label="Local Address"></ElTableColumn>
     <ElTableColumn prop="RemoteAddr" label="Remote Address" sortable></ElTableColumn>
