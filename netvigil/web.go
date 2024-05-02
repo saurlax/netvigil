@@ -61,12 +61,12 @@ func init() {
 		case "/api/login":
 			loginHandler(ctx)
 		default:
-			path = "static" + path
+			path = "dist" + path
 			_, err := os.Stat(path)
 			if err == nil {
 				ctx.File(path)
 			} else {
-				ctx.File("static/index.html")
+				ctx.File("dist/index.html")
 			}
 		}
 	})
