@@ -10,6 +10,7 @@ Firstly, build frontend resources
 
 ```bash
 $ cd frontend
+$ npm i
 $ npm run build
 ```
 
