@@ -1,4 +1,4 @@
-# net-vigil
+# netvigil
 
 Network Traffic Monitoring and Analysis based Local Threat Intelligence Center
 
