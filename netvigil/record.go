@@ -45,7 +45,7 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	DB.Exec("CREATE TABLE IF NOT EXISTS records (time INTEGER PRIMARY KEY, local_addr TEXT, remote_addr TEXT, tix TEXT, location TEXT, reason TEXT, executable TEXT, risk INTEGER, confidence INTEGER)")
+	DB.Exec("CREATE TABLE IF NOT EXISTS records (time INTEGER KEY, local_addr TEXT, remote_addr TEXT, tix TEXT, location TEXT, reason TEXT, executable TEXT, risk INTEGER, confidence INTEGER)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_addr ON records (remote_addr)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_tix ON records (tix)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_risk ON records (risk)")
