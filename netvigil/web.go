@@ -7,24 +7,23 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/spf13/viper"
 )
 
-var signKey = make([]byte, 32)
+var secret = make([]byte, 32)
 
 func loginHandler(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 
 	if username == viper.GetString("username") && password == viper.GetString("password") {
-		token := jwt.New(jwt.SigningMethodHS256)
-		claims := token.Claims.(jwt.MapClaims)
-		claims["username"] = username
-		claims["expire"] = time.Now().Add(time.Hour * 72).Unix()
-
-		tokenString, err := token.SignedString(signKey)
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+			"exp":      time.Now().Add(time.Hour * 72).Unix(),
+			"username": username,
+		})
+		tokenString, err := token.SignedString(secret)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
@@ -49,7 +48,7 @@ func recordsHandler(c *gin.Context) {
 }
 
 func init() {
-	rand.Read(signKey)
+	rand.Read(secret)
 	addr := viper.GetString("web")
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
