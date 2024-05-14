@@ -16,14 +16,13 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	if len(t.Blacklist) == 0 {
 		return nil
 	}
-	i := time.Now().UnixMilli() + int64(-len(netstats))
 	records := make([]netvigil.Record, 0)
 	for _, e := range netstats {
 	Loop:
 		for _, banned := range t.Blacklist {
 			if e.RemoteAddr.IP.Equal(banned) {
 				records = append(records, netvigil.Record{
-					Time:       i,
+					Time:       time.Now().UnixMilli(),
 					LocalAddr:  e.LocalAddr.String(),
 					RemoteAddr: e.RemoteAddr.String(),
 					TIX:        "Local",
@@ -35,16 +34,6 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 				break Loop
 			}
 		}
-		records = append(records, netvigil.Record{
-			Time:       i,
-			LocalAddr:  e.LocalAddr.String(),
-			RemoteAddr: e.RemoteAddr.String(),
-			TIX:        "Local",
-			Executable: e.Process.Name,
-			Risk:       netvigil.Normal,
-			Confidence: netvigil.Medium,
-		})
-		i++
 	}
 	return records
 }
