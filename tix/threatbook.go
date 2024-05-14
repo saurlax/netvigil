@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -20,7 +19,7 @@ type ThreatBook struct {
 type ThreatBookResult struct {
 	ResponseCode int    `json:"response_code"`
 	VerBoseMsg   string `json:"verbose_msg"`
-	IPs          map[string]struct {
+	Data         map[string]struct {
 		Basic struct {
 			Location struct {
 				Country  string `json:"country"`
@@ -31,7 +30,7 @@ type ThreatBookResult struct {
 		Severity        string `json:"severity"`
 		Judgments       string `json:"judgments"`
 		ConfidenceLevel string `json:"confidence_level"`
-	} `json:"ips"`
+	} `json:"data"`
 }
 
 func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
@@ -42,31 +41,40 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 			resource = append(resource, v.RemoteAddr.IP.String())
 		}
 	}
+	println("start checking")
+	if len(resource) == 0 {
+		println("but no resource")
+		return records
+	}
 	res, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
 		"apikey":   {t.APIKey},
 		"resource": resource,
 	})
 	if err != nil {
-		log.Println("[Threatbook] Failed to request:", err)
+		fmt.Println("[Threatbook] Failed to request:", err)
 		return records
 	}
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
+
+	println(string(body))
+
 	if err != nil {
-		log.Println("[Threatbook] Failed to read response:", err)
+		fmt.Println("[Threatbook] Failed to read response:", err)
 		return records
 	}
 	var result ThreatBookResult
 	err = json.Unmarshal(body, &result)
 	if err != nil {
-		log.Println("[Threatbook] Failed to unmarshal response:", err)
+		fmt.Println("[Threatbook] Failed to unmarshal response:", err)
 		return records
 	}
 	if result.ResponseCode != 0 {
-		log.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
+		fmt.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
+		return records
 	}
 	for _, e := range netstats {
-		for k, v := range result.IPs {
+		for k, v := range result.Data {
 			if e.RemoteAddr.IP.String() == k {
 				var risk netvigil.RiskLevel
 				switch v.Severity {
@@ -100,10 +108,10 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 					Confidence: confidence,
 					Location:   fmt.Sprintf("%s %s %s", v.Basic.Location.Country, v.Basic.Location.Province, v.Basic.Location.City),
 				})
+				println("found")
 				break
 			}
 		}
 	}
-
 	return records
 }

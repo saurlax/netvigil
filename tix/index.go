@@ -28,8 +28,9 @@ func Create(m map[string]any) TIX {
 			Blacklist: blacklist,
 		}
 	case "threatbook":
-		// TODO
-		return nil
+		return &ThreatBook{
+			APIKey: m["apikey"].(string),
+		}
 	default:
 		return nil
 	}
@@ -61,8 +62,13 @@ Loop:
 func init() {
 	config := viper.Get("tix").([]any)
 	for _, v := range config {
-		tix := Create(v.(map[string]any))
+		m, ok := v.(map[string]any)
+		if !ok {
+			break
+		}
+		tix := Create(m)
 		if tix != nil {
+			fmt.Printf("[TIX] %s created\n", m["type"])
 			tixs = append(tixs, tix)
 		}
 	}

@@ -62,6 +62,7 @@ func GetRecords(limit int, page int) ([]*Record, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	var records []*Record
 	for rows.Next() {
 		r := &Record{}
@@ -71,6 +72,5 @@ func GetRecords(limit int, page int) ([]*Record, error) {
 		}
 		records = append(records, r)
 	}
-	rows.Close()
 	return records, nil
 }
