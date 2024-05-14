@@ -2,8 +2,6 @@ package netvigil
 
 import (
 	"database/sql"
-	"errors"
-	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -59,47 +57,11 @@ func (r Record) Save() error {
 	return err
 }
 
-// func GetRecordsByRemoteAddr(remoteAddr string) ([]*Record, error) {
-// 	rows, err := DB.Query("SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records WHERE remote_addr = ?", remoteAddr)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer rows.Close()
-
-// 	var records []*Record
-// 	for rows.Next() {
-// 		r := &Record{RemoteAddr: remoteAddr}
-// 		err := rows.Scan(&r.Time, &r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Executable, &r.Risk, &r.Confidence)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 		records = append(records, r)
-// 	}
-// 	return records, nil
-// }
-
-func GetSortedRecords(sortBy string, limit int, page int) ([]*Record, error) {
-	accepted := []string{"time", "remote_addr", "tix", "risk", "confidence"}
-	matched := false
-	sortBy = strings.ToLower(sortBy)
-	if sortBy == "" {
-		sortBy = "time"
-	}
-	for _, a := range accepted {
-		if a == sortBy {
-			matched = true
-			break
-		}
-	}
-	if !matched {
-		return nil, errors.New("invalid sort key")
-	}
-	rows, err := DB.Query("SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records ORDER BY "+sortBy+" LIMIT ? OFFSET ?", limit, limit*(page-1))
+func GetRecords(limit int, page int) ([]*Record, error) {
+	rows, err := DB.Query("SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records LIMIT ? OFFSET ?", limit, limit*(page-1))
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-
 	var records []*Record
 	for rows.Next() {
 		r := &Record{}
@@ -109,5 +71,6 @@ func GetSortedRecords(sortBy string, limit int, page int) ([]*Record, error) {
 		}
 		records = append(records, r)
 	}
+	rows.Close()
 	return records, nil
 }

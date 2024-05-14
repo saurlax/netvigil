@@ -39,7 +39,7 @@ func recordsHandler(c *gin.Context) {
 	if err != nil {
 		page = 0
 	}
-	records, err := GetSortedRecords(c.Param("key"), 10000, page)
+	records, err := GetRecords(1000, page)
 	if err != nil {
 		c.JSON(500, gin.H{
 			"error": err.Error()})
