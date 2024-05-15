@@ -20,11 +20,7 @@ onMounted(async () => {
   user.value = sessionStorage.getItem('user')
   if (!user.value) router.push('/login')
   axios.get('/api/records').then(res => {
-    const data = res.data
-    data.forEach((record: any) => {
-      record.Time = new Date(record.Time).toLocaleString()
-    })
-    records.value = data
+    records.value = res.data
   })
 })
 
