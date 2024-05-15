@@ -27,7 +27,7 @@ type ThreatBookResult struct {
 				Province string `json:"province"`
 				City     string `json:"city"`
 			} `json:"location"`
-		} `json:"basic_info"`
+		} `json:"basic"`
 		Judgments       []string `json:"judgments"`
 		Severity        string   `json:"severity"`
 		ConfidenceLevel string   `json:"confidence_level"`
@@ -45,6 +45,7 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	if len(resource) == 0 {
 		return records
 	}
+	// request
 	res, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
 		"apikey":   {t.APIKey},
 		"resource": resource,
@@ -55,7 +56,7 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	}
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
-
+	// parse
 	if err != nil {
 		fmt.Println("[Threatbook] Failed to read response:", err)
 		return records
@@ -70,6 +71,7 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 		fmt.Printf("[Threatbook] Abnormal response (%v): %v", result.ResponseCode, result.VerBoseMsg)
 		return records
 	}
+	// match
 	for _, e := range netstats {
 		for k, v := range result.Data {
 			if e.RemoteAddr.IP.String() == k {
