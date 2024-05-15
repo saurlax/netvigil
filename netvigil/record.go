@@ -46,6 +46,7 @@ func init() {
 		panic(err)
 	}
 	DB.Exec("CREATE TABLE IF NOT EXISTS records (time INTEGER KEY, local_addr TEXT, remote_addr TEXT, tix TEXT, location TEXT, reason TEXT, executable TEXT, risk INTEGER, confidence INTEGER)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON records (time)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_addr ON records (remote_addr)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_tix ON records (tix)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_risk ON records (risk)")
@@ -58,7 +59,7 @@ func (r Record) Save() error {
 }
 
 func GetRecords(limit int, page int) ([]*Record, error) {
-	rows, err := DB.Query("SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records LIMIT ? OFFSET ?", limit, limit*(page-1))
+	rows, err := DB.Query("SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records ORDER BY time DESC LIMIT ? OFFSET ?", limit, limit*(page-1))
 	if err != nil {
 		return nil, err
 	}
