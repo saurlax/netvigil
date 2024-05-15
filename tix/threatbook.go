@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
@@ -27,9 +28,9 @@ type ThreatBookResult struct {
 				City     string `json:"city"`
 			} `json:"location"`
 		} `json:"basic_info"`
-		Severity        string `json:"severity"`
-		Judgments       string `json:"judgments"`
-		ConfidenceLevel string `json:"confidence_level"`
+		Judgments       []string `json:"judgments"`
+		Severity        string   `json:"severity"`
+		ConfidenceLevel string   `json:"confidence_level"`
 	} `json:"data"`
 }
 
@@ -41,9 +42,7 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 			resource = append(resource, v.RemoteAddr.IP.String())
 		}
 	}
-	println("start checking")
 	if len(resource) == 0 {
-		println("but no resource")
 		return records
 	}
 	res, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
@@ -56,8 +55,6 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	}
 	defer res.Body.Close()
 	body, err := io.ReadAll(res.Body)
-
-	println(string(body))
 
 	if err != nil {
 		fmt.Println("[Threatbook] Failed to read response:", err)
@@ -102,13 +99,12 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 					LocalAddr:  e.LocalAddr.String(),
 					RemoteAddr: e.RemoteAddr.String(),
 					TIX:        "ThreatBook",
-					Reason:     v.Judgments,
+					Reason:     strings.Join(v.Judgments, ", "),
 					Executable: e.Process.Name,
 					Risk:       risk,
 					Confidence: confidence,
 					Location:   fmt.Sprintf("%s %s %s", v.Basic.Location.Country, v.Basic.Location.Province, v.Basic.Location.City),
 				})
-				println("found")
 				break
 			}
 		}
