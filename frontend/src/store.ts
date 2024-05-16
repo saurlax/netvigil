@@ -1,6 +1,6 @@
 import { ref } from "vue"
 
-export interface Record {
+export interface IPRecord {
   Time: number
   LocalAddr: string
   RemoteAddr: string
@@ -12,7 +12,12 @@ export interface Record {
   Confidence: number
 }
 
-const user = ref()
-const records = ref<Record[]>([])
+export interface User {
+  username: string
+  token: string
+}
+
+const user = ref<User>()
+const records = ref<IPRecord[]>([])
 
 export { user, records }

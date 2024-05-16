@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ElTable, ElTableColumn, ElTooltip, TableColumnCtx } from 'element-plus'
-import { records, Record } from '../store'
+import { records, IPRecord } from '../store'
 import { computed } from 'vue'
 
-const getFilter = (records: Record[], property: keyof Record) => {
-  const values = new Set(records.map(record => record[property]))
+const getFilter = (records: IPRecord[], property: keyof IPRecord) => {
+  const values = new Set(records.map(record => record[property].toString()))
   return Array.from(values).map(value => ({ text: value, value: value }))
 }
 
@@ -17,8 +17,8 @@ const filters = computed(() => {
   }
 })
 
-const filterHandler = (value: string, row: Record, column: TableColumnCtx<Record>) => {
-  const property = column['property'] as keyof Record
+const filterHandler = (value: string, row: IPRecord, column: TableColumnCtx<IPRecord>) => {
+  const property = column['property'] as keyof IPRecord
   return row[property] === value
 }
 

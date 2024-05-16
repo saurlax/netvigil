@@ -4,7 +4,7 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { PieChart } from 'echarts/charts'
 import { TitleComponent, TooltipComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { ref } from 'vue'
+import { computed, reactive } from 'vue'
 import { records } from '../store'
 
 use([
@@ -14,33 +14,38 @@ use([
   TooltipComponent
 ])
 
-let sum = [0, 0, 0, 0, 0]
-records.value.forEach((record: any) => {
-  sum[record.Risk]++
+const sum = computed(() => {
+  const sum = [0, 0, 0, 0, 0]
+  records.value.forEach((record) => {
+    sum[record.Risk]++
+  })
+  return sum
 })
 
-const option = ref({
-  title: {
-    text: 'Network Traffic',
-    left: 'center',
-  },
-  tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b} : {c} ({d}%)',
-  },
-  series: [
-    {
-      name: 'Traffic Sources',
-      type: 'pie',
-      data: [
-        { value: sum[0], name: 'Unknown' },
-        { value: sum[1], name: 'Safe' },
-        { value: sum[2], name: 'Normal' },
-        { value: sum[3], name: 'Suspicious' },
-        { value: sum[4], name: 'Malicious' }
-      ],
+const option = computed(() => {
+  return {
+    title: {
+      text: 'Network Traffic',
+      left: 'center',
     },
-  ],
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b} : {c} ({d}%)',
+    },
+    series: [
+      {
+        name: 'Traffic Sources',
+        type: 'pie',
+        data: [
+          { value: sum.value[0], name: 'Unknown' },
+          { value: sum.value[1], name: 'Safe' },
+          { value: sum.value[2], name: 'Normal' },
+          { value: sum.value[3], name: 'Suspicious' },
+          { value: sum.value[4], name: 'Malicious' }
+        ],
+      },
+    ],
+  }
 })
 </script>
 

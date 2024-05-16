@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
@@ -9,19 +9,30 @@ const route = useRoute()
 const router = useRouter()
 
 const logout = () => {
-  ElMessageBox.confirm('Are you sure you want to logout?').then(() => {
-    sessionStorage.removeItem('user')
-    user.value = null
-    router.push('/login')
-  })
+  sessionStorage.removeItem('user')
+  user.value = undefined
+  router.push('/login')
 }
 
 onMounted(async () => {
-  user.value = sessionStorage.getItem('user')
-  if (!user.value) router.push('/login')
-  axios.get('/api/records').then(res => {
-    records.value = res.data
-  })
+  const userStorage = sessionStorage.getItem('user')
+  if (userStorage) {
+    user.value = JSON.parse(userStorage)
+  } else {
+    logout()
+  }
+})
+
+watch(user, () => {
+  if (user.value) {
+    axios.get('/api/records', {
+      headers: {
+        Authorization: `Bearer ${user.value.token}`
+      }
+    }).then(res => {
+      records.value = res.data
+    }).catch(logout)
+  }
 })
 
 const navigate = (name: string) => {
@@ -36,10 +47,11 @@ const navigate = (name: string) => {
       <ElScrollbar>
         <div class="logo"></div>
         <ElMenu :default-active="route.name?.toString()" @select="navigate">
-          <ElMenuItem index="home">Home</ElMenuItem>
-          <ElMenuItem index="records">Records</ElMenuItem>
-          <ElMenuItem index="tix">TIX</ElMenuItem>
-          <ElMenuItem v-if="user" @click="logout">Logout</ElMenuItem>
+          <ElMenuItem index="home">统计数据</ElMenuItem>
+          <ElMenuItem index="records">情报记录</ElMenuItem>
+          <ElMenuItem index="tix">情报中心</ElMenuItem>
+          <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(logout)">退出登录
+          </ElMenuItem>
         </ElMenu>
       </ElScrollbar>
     </ElAside>

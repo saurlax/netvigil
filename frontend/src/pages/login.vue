@@ -12,9 +12,12 @@ const form = reactive({
 })
 
 const submit = async () => {
-  axios.postForm('/api/login', form).then(data => {
-    sessionStorage.setItem('user', JSON.stringify(data))
-    user.value = data
+  axios.postForm('/api/login', form).then(res => {
+    user.value = {
+      username: form.username,
+      token: res.data.token
+    }
+    sessionStorage.setItem('user', JSON.stringify(user.value))
     ElMessage.success('Login Successfully!')
     router.push('/')
   }).catch(err => {
