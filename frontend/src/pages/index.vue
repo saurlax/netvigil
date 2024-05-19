@@ -1,86 +1,138 @@
-<script setup lang="ts">
-import { use } from 'echarts/core'
-import { CanvasRenderer } from 'echarts/renderers'
-import { PieChart } from 'echarts/charts'
-import { TitleComponent, TooltipComponent } from 'echarts/components'
-import VChart from 'vue-echarts'
-import { ref } from 'vue'
-import { records } from '../store'
-
-use([
-  CanvasRenderer,
-  PieChart,
-  TitleComponent,
-  TooltipComponent
-])
-
-let sum = [0, 0, 0, 0, 0]
-records.value.forEach((record: any) => {
-  sum[record.Risk]++
-})
-
-const option = ref({
-  title: {
-    text: 'Network Traffic',
-    left: 'center',
-  },
-  tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b} : {c} ({d}%)',
-  },
-  series: [
-    {
-      name: 'Traffic Sources',
-      type: 'pie',
-      data: [
-        { value: sum[0], name: 'Unknown' },
-        { value: sum[1], name: 'Safe' },
-        { value: sum[2], name: 'Normal' },
-        { value: sum[3], name: 'Suspicious' },
-        { value: sum[4], name: 'Malicious' }
-      ],
-    },
-  ],
-})
-</script>
-
 <template>
-  <v-chart class="chart" :option="option" autoresize />
-  <div class="info">
-    <div class="news">
-      <div><b>安全新闻</b></div>
-      <div>JSOutProx新版本针对APAC和MENA地区的金融服务和组织</div>
-      <div>Tag：JSOutProx, Resecurity</div>
-      <div>事件概述：</div>
-      <div>
-        安全公司Resecurity检测到JSOutProx的新版本，该版本针对亚太地区和中东北非地区的金融服务和组织。JSOutProx是一个复杂的攻击框架，利用JavaScript和.NET进行攻击。一旦执行，恶意软件使框架能够加载各种插件，对目标进行额外的恶意活动。该恶意软件首次在2019年被识别，最初被归因于SOLAR
-        SPIDER的网络钓鱼活动，这些活动将JSOutProx RAT传递给非洲、中东、南亚和东南亚的金融机构。在2024年2月8日左右，该活动的高峰期，沙特阿拉伯的一家主要系统集成商报告了针对其一家主要银行的客户的事件。
-      </div>
-    </div>
-    <div class="stats">
-      <div><b>统计信息</b></div>
-      <div>未知：{{ sum[0] }}</div>
-      <div>安全：{{ sum[1] }}</div>
-      <div>正常：{{ sum[2] }}</div>
-      <div>可疑：{{ sum[3] }}</div>
-      <div>恶意：{{ sum[4] }}</div>
-    </div>
-  </div>
+  <div ref="chartRef" class="chart"></div>
 </template>
+
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import * as echarts from 'echarts';
+
+// 定义chartRef和myChart变量
+const chartRef = ref<HTMLElement | null>(null);
+let myChart: echarts.ECharts | null = null;
+
+const resizeChart = () => {
+  if (myChart) {
+    myChart.resize();
+  }
+};
+
+onMounted(() => {
+  if (!chartRef.value) {
+    console.error("Chart DOM element not found.");
+    return;
+  }
+
+  // 初始化ECharts实例
+  myChart = echarts.init(chartRef.value, 'dark');
+
+  const option: echarts.EChartsOption = {
+    legend: {},
+    tooltip: {
+      trigger: 'axis',
+      showContent: false
+    },
+    dataset: {
+      source: [
+        ['Date', '2024.5.13/Mon', '2024.5.14/Tue', '2024.5.15/Wed', '2024.5.16/Thu', '2024.5.17/Fri', '2024.5.18/Sat', '2024.5.19/Sun'],
+        ['Unknown', 56.5, 82.1, 88.7, 70.1, 53.4, 85.1, 92],
+        ['Safe', 51.1, 51.4, 55.1, 53.3, 73.8, 68.7, 93],
+        ['Normal', 40.1, 62.2, 69.5, 36.4, 45.2, 32.5, 94],
+        ['Suspicious', 25.2, 37.1, 41.2, 18, 33.9, 49.1, 95],
+        ['Malicious', 25, 75, 23, 46, 43, 34, 12]
+      ]
+    },
+    xAxis: { type: 'category' },
+    yAxis: { gridIndex: 0 },
+    grid: { top: '55%' },
+    series: [
+      {
+        type: 'line',
+        smooth: true,
+        seriesLayoutBy: 'row',
+        emphasis: { focus: 'series' }
+      },
+      {
+        type: 'line',
+        smooth: true,
+        seriesLayoutBy: 'row',
+        emphasis: { focus: 'series' }
+      },
+      {
+        type: 'line',
+        smooth: true,
+        seriesLayoutBy: 'row',
+        emphasis: { focus: 'series' }
+      },
+      {
+        type: 'line',
+        smooth: true,
+        seriesLayoutBy: 'row',
+        emphasis: { focus: 'series' }
+      },
+      {
+        type: 'line',
+        smooth: true,
+        seriesLayoutBy: 'row',
+        emphasis: { focus: 'series' }
+      },
+      {
+        type: 'pie',
+        id: 'pie',
+        radius: '30%',
+        center: ['50%', '25%'],
+        emphasis: {
+          focus: 'self'
+        },
+        label: {
+          formatter: '{b}: {@2024.5.13/Mon} ({d}%)'
+        },
+        encode: {
+          itemName: 'Date',
+          value: '2024.5.13/Mon',
+          tooltip: '2024.5.13/Mon'
+        }
+      }
+    ]
+  };
+
+  myChart.setOption(option);
+
+  myChart.on('updateAxisPointer', function (event: any) {
+    const xAxisInfo = event.axesInfo[0];
+    if (xAxisInfo) {
+      const dimension = xAxisInfo.value + 1;
+      myChart?.setOption<echarts.EChartsOption>({
+        series: {
+          id: 'pie',
+          label: {
+            formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+          },
+          encode: {
+            value: dimension,
+            tooltip: dimension
+          }
+        }
+      });
+    }
+  });
+
+  // 添加窗口大小变化事件监听器
+  window.addEventListener('resize', resizeChart);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeChart);
+  if (myChart) {
+    myChart.dispose();
+  }
+});
+</script>
 
 <style scoped>
 .chart {
-  height: 400px;
-}
-
-.info {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-}
-
-.news {
-  max-width: 30%;
-  font-size: 0.8rem;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  min-width: 60vw;
 }
 </style>
