@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import axios from 'axios'
 import { ElButton, ElForm, ElFormItem, ElInput, ElMessage } from 'element-plus'
-import { reactive } from 'vue'
-import { user } from '../store'
+import { onMounted, reactive } from 'vue'
+import { user } from '../utils'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -24,6 +24,11 @@ const submit = async () => {
     ElMessage.error(err.response.data.error)
   })
 }
+
+onMounted(() => {
+  localStorage.removeItem('user')
+  user.value = undefined
+})
 </script>
 
 <template>

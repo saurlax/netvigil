@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ElTable, ElTableColumn, ElTooltip, TableColumnCtx } from 'element-plus'
-import { records, IPRecord } from '../store'
+import { records, IPRecord } from '../utils'
 import { computed } from 'vue'
 
 const getFilter = (records: IPRecord[], property: keyof IPRecord) => {

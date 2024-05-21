@@ -1,25 +1,20 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
-import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessageBox, ElScrollbar, } from 'element-plus'
+import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessage, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { user, records } from './store'
+import { user, records } from './utils'
 
 const route = useRoute()
 const router = useRouter()
 
-const logout = () => {
-  localStorage.removeItem('user')
-  user.value = undefined
-  router.push('/login')
-}
 
 onMounted(() => {
   const userStorage = localStorage.getItem('user')
   if (userStorage) {
     user.value = JSON.parse(userStorage)
   } else {
-    logout()
+    router.push('/login')
   }
 })
 
@@ -31,7 +26,13 @@ watch(user, () => {
       }
     }).then(res => {
       records.value = res.data
-    }).catch(logout)
+    }).catch(e => {
+      if (e.response.status === 401) {
+        router.push('/login')
+      } else {
+        ElMessage.error(e.response.data.error)
+      }
+    })
   }
 })
 
@@ -50,7 +51,7 @@ const navigate = (name: string) => {
           <ElMenuItem index="home">统计数据</ElMenuItem>
           <ElMenuItem index="records">情报记录</ElMenuItem>
           <ElMenuItem index="tix">情报中心</ElMenuItem>
-          <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(logout)">退出登录
+          <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(() => { router.push('/login') })">退出登录
           </ElMenuItem>
         </ElMenu>
       </ElScrollbar>

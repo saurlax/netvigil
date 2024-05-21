@@ -5,7 +5,7 @@ import { BarChart, LineChart, PieChart } from 'echarts/charts'
 import { DatasetComponent, GridComponent, LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components'
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
-import { records } from '../store'
+import { records } from '../utils'
 import moment from 'moment'
 
 use([
