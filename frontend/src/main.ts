@@ -2,13 +2,14 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './app.vue'
 import ElementPlus from 'element-plus'
+import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import Index from './pages/index.vue'
 import Records from './pages/records.vue'
+import Tix from './pages/tix.vue'
+import Login from './pages/login.vue'
 
 import 'element-plus/dist/index.css'
 import './style.css'
-import Tix from './pages/tix.vue'
-import Login from './pages/login.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -33,5 +34,10 @@ const router = createRouter({
 
 const app = createApp(App)
 app.use(router)
-app.use(ElementPlus)
+app.use(ElementPlus, {
+  locale: zhCn,
+})
 app.mount('#app')
+
+
+
