@@ -72,6 +72,39 @@ func recordsHandler(c *gin.Context) {
 	c.JSON(200, records)
 }
 
+func readConfigHandler(c *gin.Context) {
+	c.JSON(200, viper.AllSettings())
+}
+
+func writeConfigHandler(c *gin.Context) {
+	var updates map[string]interface{}
+	if err := c.BindJSON(&updates); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	for key, value := range updates {
+		viper.Set(key, value)
+	}
+	if err := viper.WriteConfig(); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, "ok")
+}
+
+func staticHandler(c *gin.Context) {
+	path := c.Request.URL.Path
+	if !strings.HasPrefix(path, "/api") {
+		path = "dist" + path
+		_, err := os.Stat(path)
+		if err == nil {
+			c.File(path)
+		} else {
+			c.File("dist/index.html")
+		}
+	}
+}
+
 func init() {
 	rand.Read(secret)
 	gin.SetMode(gin.ReleaseMode)
@@ -79,18 +112,9 @@ func init() {
 
 	r.POST("/api/login", loginHandler)
 	r.GET("/api/records", authHandler, recordsHandler)
-	r.NoRoute(func(c *gin.Context) {
-		path := c.Request.URL.Path
-		if !strings.HasPrefix(path, "/api") {
-			path = "dist" + path
-			_, err := os.Stat(path)
-			if err == nil {
-				c.File(path)
-			} else {
-				c.File("dist/index.html")
-			}
-		}
-	})
+	r.GET("/api/config", authHandler, readConfigHandler)
+	r.POST("/api/config", authHandler, writeConfigHandler)
+	r.NoRoute(staticHandler)
 
 	addr := viper.GetString("web")
 	fmt.Printf("Web server started on http://%s/\n", addr)
