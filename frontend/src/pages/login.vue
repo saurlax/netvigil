@@ -18,7 +18,7 @@ const submit = async () => {
       token: res.data.token
     }
     localStorage.setItem('user', JSON.stringify(user.value))
-    ElMessage.success('Login Successfully!')
+    ElMessage.success('登录成功')
     router.push('/')
   }).catch(err => {
     ElMessage.error(err.response.data.error)
@@ -33,12 +33,12 @@ const submit = async () => {
         <img src="/logo.webp" alt="logo" />
       </ElFormItem>
       <ElFormItem>
-        <ElInput v-model="form.username" placeholder="username" />
+        <ElInput v-model="form.username" placeholder="账号" />
       </ElFormItem>
       <ElFormItem>
-        <ElInput v-model="form.password" placeholder="password" type="password" />
+        <ElInput v-model="form.password" placeholder="密码" type="password" />
       </ElFormItem>
-      <ElButton type="primary" native-type="submit">Login</ElButton>
+      <ElButton type="primary" native-type="submit">登录</ElButton>
     </ElForm>
   </div>
 </template>

@@ -26,28 +26,27 @@ const filterHandler = (value: string, row: IPRecord, column: TableColumnCtx<IPRe
 
 <template>
   <ElTable :data="records" stripe>
-    <ElTableColumn prop="Time" label="Time" sortable>
+    <ElTableColumn prop="Time" label="时间" sortable>
       <template #default="scope">
         <span>{{ new Date(scope.row.Time).toLocaleString() }}</span>
       </template>
     </ElTableColumn>
-    <ElTableColumn prop="LocalAddr" label="Local Address" sortable></ElTableColumn>
-    <ElTableColumn prop="RemoteAddr" label="Remote Address" sortable></ElTableColumn>
-    <ElTableColumn prop="Executable" label="Executable" sortable :filters="filters.Executable"
-      :filter-method="filterHandler">
+    <ElTableColumn prop="LocalAddr" label="本地地址" sortable></ElTableColumn>
+    <ElTableColumn prop="RemoteAddr" label="远程地址" sortable></ElTableColumn>
+    <ElTableColumn prop="Executable" label="发起程序" sortable :filters="filters.Executable" :filter-method="filterHandler">
       <template #default="scope">
         <ElTooltip :content="scope.row.Executable">
           <span>{{ scope.row.Executable.match(/([^\\\/]+)$/)[0] }}</span>
         </ElTooltip>
       </template>
     </ElTableColumn>
-    <ElTableColumn prop="Location" label="Location" sortable :filters="filters.Location" :filter-method="filterHandler">
+    <ElTableColumn prop="Location" label="位置" sortable :filters="filters.Location" :filter-method="filterHandler">
     </ElTableColumn>
-    <ElTableColumn prop="Reason" label="Reason" sortable :filters="filters.Reason" :filter-method="filterHandler">
+    <ElTableColumn prop="Reason" label="原因" sortable :filters="filters.Reason" :filter-method="filterHandler">
     </ElTableColumn>
-    <ElTableColumn prop="Risk" label="Risk" sortable></ElTableColumn>
-    <ElTableColumn prop="TIX" label="TIX" sortable :filters="filters.TIX" :filter-method="filterHandler">
+    <ElTableColumn prop="Risk" label="威胁度" sortable></ElTableColumn>
+    <ElTableColumn prop="TIX" label="情报中心" sortable :filters="filters.TIX" :filter-method="filterHandler">
     </ElTableColumn>
-    <ElTableColumn prop="Confidence" label="Confidence" sortable></ElTableColumn>
+    <ElTableColumn prop="Confidence" label="可信度" sortable></ElTableColumn>
   </ElTable>
 </template>
