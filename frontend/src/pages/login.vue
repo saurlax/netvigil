@@ -17,7 +17,7 @@ const submit = async () => {
       username: form.username,
       token: res.data.token
     }
-    sessionStorage.setItem('user', JSON.stringify(user.value))
+    localStorage.setItem('user', JSON.stringify(user.value))
     ElMessage.success('Login Successfully!')
     router.push('/')
   }).catch(err => {

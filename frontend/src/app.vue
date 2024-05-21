@@ -9,13 +9,13 @@ const route = useRoute()
 const router = useRouter()
 
 const logout = () => {
-  sessionStorage.removeItem('user')
+  localStorage.removeItem('user')
   user.value = undefined
   router.push('/login')
 }
 
-onMounted(async () => {
-  const userStorage = sessionStorage.getItem('user')
+onMounted(() => {
+  const userStorage = localStorage.getItem('user')
   if (userStorage) {
     user.value = JSON.parse(userStorage)
   } else {
