@@ -3,6 +3,9 @@ check_interval = '10s'
 
 web = '127.0.0.1:8080'
 
+username = 'admin'
+password = 'admin'
+
 [[tix]]
 type = 'local'
 blacklist = ['1.1.1.1']

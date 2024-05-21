@@ -16,5 +16,4 @@ go.work
 
 *.db
 dist
-config.yml
-config.toml
+/config.toml
