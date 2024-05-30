@@ -105,6 +105,26 @@ func staticHandler(c *gin.Context) {
 	}
 }
 
+func checkHandler(c *gin.Context) {
+	var request struct {
+		Token string   `json:"token"`
+		IPs   []string `json:"ips"`
+	}
+
+	if err := c.BindJSON(&request); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	records, err := GetRecordsByIPs(request.IPs)
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(200, records)
+}
+
 func init() {
 	rand.Read(secret)
 	gin.SetMode(gin.ReleaseMode)
@@ -114,6 +134,7 @@ func init() {
 	r.GET("/api/records", authHandler, recordsHandler)
 	r.GET("/api/config", authHandler, readConfigHandler)
 	r.POST("/api/config", authHandler, writeConfigHandler)
+	r.POST("/api/check", checkHandler)
 	r.NoRoute(staticHandler)
 
 	addr := viper.GetString("web")
