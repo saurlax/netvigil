@@ -28,9 +28,7 @@ func (t *Netvigil) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	var records []netvigil.Record
 	var ips []string
 	for _, v := range netstats {
-		if !v.RemoteAddr.IP.IsPrivate() {
-			ips = append(ips, v.RemoteAddr.IP.String())
-		}
+		ips = append(ips, v.RemoteAddr.IP.String())
 	}
 	if len(ips) == 0 {
 		return records
