@@ -2,6 +2,7 @@ package netvigil
 
 import (
 	"database/sql"
+	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -73,5 +74,37 @@ func GetRecords(limit int, page int) ([]*Record, error) {
 		}
 		records = append(records, r)
 	}
+	return records, nil
+}
+func GetRecordsByIPs(ips []string) ([]*Record, error) {
+	if len(ips) == 0 {
+		return []*Record{}, nil
+	}
+
+	query := "SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records WHERE local_addr IN (?" + strings.Repeat(",?", len(ips)-1) + ") OR remote_addr IN (?" + strings.Repeat(",?", len(ips)-1) + ")"
+	args := make([]interface{}, len(ips)*2)
+	for i, ip := range ips {
+		args[i] = ip
+		args[i+len(ips)] = ip
+	}
+
+	rows, err := DB.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var records []*Record
+	for rows.Next() {
+		r := &Record{}
+		if err := rows.Scan(&r.Time, &r.LocalAddr, &r.RemoteAddr, &r.TIX, &r.Location, &r.Reason, &r.Executable, &r.Risk, &r.Confidence); err != nil {
+			return nil, err
+		}
+		records = append(records, r)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return records, nil
 }
