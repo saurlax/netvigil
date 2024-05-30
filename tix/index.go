@@ -31,6 +31,11 @@ func Create(m map[string]any) TIX {
 		return &ThreatBook{
 			APIKey: m["apikey"].(string),
 		}
+	case "netvigil":
+		return &Netvigil{
+			Server: m["server"].(string),
+			Token:  m["token"].(string),
+		}
 	default:
 		return nil
 	}
