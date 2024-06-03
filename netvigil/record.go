@@ -83,7 +83,6 @@ func GetRecordsByIPs(ips []string) ([]*Record, error) {
 	}
 
 	query := "SELECT time, local_addr, remote_addr, tix, location, reason, executable, risk, confidence FROM records WHERE local_addr IN (?" + strings.Repeat(",?", len(ips)-1) + ") OR remote_addr IN (?" + strings.Repeat(",?", len(ips)-1) + ")"
-
 	args := make([]interface{}, len(ips)*2)
 	for i, ip := range ips {
 		args[i] = ip
