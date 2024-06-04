@@ -160,10 +160,6 @@ const last7DaysOption = computed(() => {
 })
 </script>
 
-<template>
-  <v-chart class="chart" :option="option" autoresize />
-</template>
-
 <style scoped>
 .dashboard {
   background-color: #0b082e;
