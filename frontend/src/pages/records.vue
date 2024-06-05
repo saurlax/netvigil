@@ -31,8 +31,10 @@ const filterHandler = (value: string, row: IPRecord, column: TableColumnCtx<IPRe
         <span>{{ new Date(scope.row.Time).toLocaleString() }}</span>
       </template>
     </ElTableColumn>
-    <ElTableColumn prop="LocalAddr" label="本地地址" sortable></ElTableColumn>
-    <ElTableColumn prop="RemoteAddr" label="远程地址" sortable></ElTableColumn>
+    <ElTableColumn prop="LocalIP" label="本地地址" sortable :formatter="row => `${row.LocalIP}:${row.LocalPort}`">
+    </ElTableColumn>
+    <ElTableColumn prop="RemoteIP" label="远程地址" sortable :formatter="row => `${row.RemoteIP}:${row.RemotePort}`">
+    </ElTableColumn>
     <ElTableColumn prop="Executable" label="发起程序" sortable :filters="filters.Executable" :filter-method="filterHandler">
       <template #default="scope">
         <ElTooltip :content="scope.row.Executable">
