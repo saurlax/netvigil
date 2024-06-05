@@ -98,8 +98,10 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 
 				records = append(records, netvigil.Record{
 					Time:       time.Now().UnixMilli(),
-					LocalAddr:  e.LocalAddr.String(),
-					RemoteAddr: e.RemoteAddr.String(),
+					LocalIP:    e.LocalAddr.IP.String(),
+					LocalPort:  int(e.LocalAddr.Port),
+					RemoteIP:   e.RemoteAddr.IP.String(),
+					RemotePort: int(e.RemoteAddr.Port),
 					TIX:        "ThreatBook",
 					Reason:     strings.Join(v.Judgments, ", "),
 					Executable: e.Process.Name,

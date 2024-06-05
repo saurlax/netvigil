@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"strings"
 
 	"github.com/gen2brain/beeep"
 )
@@ -36,15 +35,15 @@ func addFireWall(ip string) {
 // }
 
 func suspiciousAction(r *Record) {
-	addFireWall(strings.Split(r.RemoteAddr, ":")[0])
-	fmt.Printf("\x1B[33mSuspicious threat detected: %s → %s\x1B[0m\n", r.Executable, r.RemoteAddr)
-	beeep.Notify("Suspicious threat detected!", fmt.Sprintf("%s → %s", r.Executable, r.RemoteAddr), "")
+	addFireWall(r.RemoteIP)
+	fmt.Printf("\x1B[33mSuspicious threat detected: %s → %s\x1B[0m\n", r.Executable, r.RemoteIP)
+	beeep.Notify("Suspicious threat detected!", fmt.Sprintf("%s → %s", r.Executable, r.RemoteIP), "")
 }
 
 func maliciousAction(r *Record) {
-	addFireWall(strings.Split(r.RemoteAddr, ":")[0])
-	fmt.Printf("\x1B[31mMalicious threat detected: %s → %s\x1B[0m\n", r.Executable, r.RemoteAddr)
-	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", r.Executable, r.RemoteAddr), "")
+	addFireWall(r.RemoteIP)
+	fmt.Printf("\x1B[31mMalicious threat detected: %s → %s\x1B[0m\n", r.Executable, r.RemoteIP)
+	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", r.Executable, r.RemoteIP), "")
 }
 
 func (r Record) Action() {

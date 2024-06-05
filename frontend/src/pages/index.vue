@@ -4,6 +4,8 @@
       <v-chart class="chart" :option="option" :theme="'dark'" autoresize />
     </div>
     <div class="last7days">
+    <v-chart class="chart" :option="option" :theme="'dark'" autoresize />
+    <div>
       <h2 class="title">近七天的监测数据</h2>
       <div class="card-container">
         <div class="card" v-for="(item, index) in last7DaysStats" :key="index">
@@ -14,6 +16,7 @@
       <div class="last7days-chart-container">
         <v-chart class="last7days-chart" :option="last7DaysOption" :theme="'dark'" autoresize />
       </div>
+      <v-chart class="chart" :option="last7DaysOption" :theme="'dark'" autoresize />
     </div>
   </div>
 </template>
@@ -133,6 +136,7 @@ const last7DaysStats = computed(() => {
 
   const last7Days = records.value.filter(record => {
     return moment().diff(moment(record.Time), 'days') <= 100
+    return moment().diff(moment(record.Time), 'days') <= 7
   })
 
   for (const record of last7Days) {
