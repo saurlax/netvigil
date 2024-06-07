@@ -8,10 +8,10 @@
         <ElInput v-model="editConfig.web"></ElInput>
       </ElFormItem>
       <ElFormItem label="抓包间隔">
-        <ElInput v-model="editConfig.capture_interval"></ElInput>
+        <ElInput v-model="editConfig.capture_interval" type="number" style="width: 80px;"></ElInput><span>s</span>
       </ElFormItem>
       <ElFormItem label="检测间隔">
-        <ElInput v-model="editConfig.check_interval"></ElInput>
+        <ElInput v-model="editConfig.check_interval" type="number" style="width: 80px;"></ElInput><span>s</span>
       </ElFormItem>
       <ElFormItem label="是否修改密码">
         <ElCheckbox v-model="modifyPassword">是</ElCheckbox>
@@ -21,7 +21,6 @@
           <template #append>
             <ElButton @click="toggleOldPasswordVisibility" type="primary" circle>
               <el-icon v-if="oldPasswordVisible"><View /></el-icon>
- 
             </ElButton>
           </template>
         </ElInput>
@@ -31,7 +30,6 @@
           <template #append>
             <ElButton @click="toggleNewPasswordVisibility" type="primary" circle>
               <el-icon v-if="newPasswordVisible"><View /></el-icon>
- 
             </ElButton>
           </template>
         </ElInput>
@@ -41,13 +39,12 @@
           <template #append>
             <ElButton @click="toggleConfirmNewPasswordVisibility" type="primary" circle>
               <el-icon v-if="confirmNewPasswordVisible"><View /></el-icon>
- 
             </ElButton>
           </template>
         </ElInput>
       </ElFormItem>
       <ElFormItem label="黑名单">
-        <ElTable :data="localBlacklist" style="width: 100%">
+        <ElTable :data="localBlacklist.map(ip => ({ ip }))" style="width: 100%">
           <ElTableColumn prop="ip" label="IP" width="180"/>
           <ElTableColumn fixed="right" label="操作" width="100">
             <template #default="scope">
@@ -146,7 +143,9 @@ onMounted(() => {
       web: config.web,
       tix: config.tix
     };
-    localBlacklist.value = localConfig.blacklist;
+    if (localConfig && localConfig.blacklist) {
+      localBlacklist.value = localConfig.blacklist;
+    }
   }).catch(e => {
     if (e.response.status === 401) {
       router.push('/login');

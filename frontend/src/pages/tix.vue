@@ -1,5 +1,6 @@
 <template>
   <div class="tix-config">
+    <h3>基本设置</h3>
     <ElForm label-position="top" :model="config">
       <ElFormItem label="用户名">
         <ElInput v-model="config.username" readonly></ElInput>
@@ -8,10 +9,10 @@
         <ElInput v-model="config.web" readonly></ElInput>
       </ElFormItem>
       <ElFormItem label="抓包间隔">
-        <ElInput v-model="config.capture_interval" readonly></ElInput>
+        <ElInput :value="`${config.capture_interval}s`" readonly></ElInput>
       </ElFormItem>
       <ElFormItem label="检测间隔">
-        <ElInput v-model="config.check_interval" readonly></ElInput>
+        <ElInput :value="`${config.check_interval}s`" readonly></ElInput>
       </ElFormItem>
     </ElForm>
 
@@ -21,9 +22,9 @@
         <ElFormItem :label="k">
           <ElInput :value="v" readonly></ElInput>
         </ElFormItem>
-        <ElButton type="primary" @click="goToEdit">修改资料</ElButton>
       </ElForm>
     </div>
+    <ElButton type="primary" @click="goToEdit">修改设置</ElButton>
   </div>
 </template>
 

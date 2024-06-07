@@ -68,18 +68,18 @@
 
   const total = computed(() => {
     const map = {
-      Unknown: 0,
-      Safe: 0,
-      Normal: 0,
-      Suspicious: 0,
-      Malicious: 0
+      未知: 0,
+      安全: 0,
+      普通: 0,
+      可疑: 0,
+      恶意: 0
     }
     for (const stat of statsChartData.value) {
-      map.Unknown += stat.Unknown
-      map.Safe += stat.Safe
-      map.Normal += stat.Normal
-      map.Suspicious += stat.Suspicious
-      map.Malicious += stat.Malicious
+      map.未知 += stat.Unknown
+      map.安全 += stat.Safe
+      map.普通 += stat.Normal
+      map.可疑 += stat.Suspicious
+      map.恶意 += stat.Malicious
     }
     return Object.entries(map).map(([key, val]) => {
       return {
@@ -106,6 +106,7 @@
       xAxis: { type: 'category' },
       yAxis: {},
       grid: [{ top: '50%' }],
+      color: ['#63DBE8', '#91cd77', '#fc8251', '#FFFD55', '#ED1C24'],
       series: [
         {
           type: 'pie',
@@ -136,7 +137,7 @@
     }
 
     const last7Days = records.value.filter(record => {
-      return moment().diff(moment(record.Time), 'days') <= 7
+      return moment().diff(moment(record.Time), 'days') <= 100
     })
 
     for (const record of last7Days) {
