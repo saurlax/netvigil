@@ -106,7 +106,7 @@
       xAxis: { type: 'category' },
       yAxis: {},
       grid: [{ top: '50%' }],
-      color: ['#63DBE8', '#91cd77', '#fc8251', '#FFFD55', '#ED1C24'],
+      color: ['#63dbe8', '#91cd77', '#fc8251', '#fffd55', '#ed1c24'],
       series: [
         {
           type: 'pie',
@@ -117,11 +117,11 @@
             formatter: '{b}: {d}%'
           }
         },
-        { type: 'line', smooth: true, seriesLayoutBy: 'row' },
-        { type: 'line', smooth: true, seriesLayoutBy: 'row' },
-        { type: 'line', smooth: true, seriesLayoutBy: 'row' },
-        { type: 'line', smooth: true, seriesLayoutBy: 'row' },
-        { type: 'line', smooth: true, seriesLayoutBy: 'row' },
+        { type: 'line', smooth: true, seriesLayoutBy: 'row', color: '#63dbe8'},
+        { type: 'line', smooth: true, seriesLayoutBy: 'row', color: '#91cd77'},
+        { type: 'line', smooth: true, seriesLayoutBy: 'row', color: '#fc8251'},
+        { type: 'line', smooth: true, seriesLayoutBy: 'row', color: '#fffd55'},
+        { type: 'line', smooth: true, seriesLayoutBy: 'row', color: '#ed1c24'},
       ]
     }
   })
@@ -137,7 +137,7 @@
     }
 
     const last7Days = records.value.filter(record => {
-      return moment().diff(moment(record.Time), 'days') <= 100
+      return moment().diff(moment(record.Time), 'days') <= 7
     })
 
     for (const record of last7Days) {
