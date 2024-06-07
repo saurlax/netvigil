@@ -20,7 +20,9 @@
         <ElInput :type="oldPasswordVisible ? 'text' : 'password'" v-model="oldPassword">
           <template #append>
             <ElButton @click="toggleOldPasswordVisibility" type="primary" circle>
-              <el-icon v-if="oldPasswordVisible"><View /></el-icon>
+              <el-icon v-if="oldPasswordVisible">
+                <View />
+              </el-icon>
             </ElButton>
           </template>
         </ElInput>
@@ -29,7 +31,9 @@
         <ElInput :type="newPasswordVisible ? 'text' : 'password'" v-model="newPassword">
           <template #append>
             <ElButton @click="toggleNewPasswordVisibility" type="primary" circle>
-              <el-icon v-if="newPasswordVisible"><View /></el-icon>
+              <el-icon v-if="newPasswordVisible">
+                <View />
+              </el-icon>
             </ElButton>
           </template>
         </ElInput>
@@ -38,14 +42,16 @@
         <ElInput :type="confirmNewPasswordVisible ? 'text' : 'password'" v-model="confirmNewPassword">
           <template #append>
             <ElButton @click="toggleConfirmNewPasswordVisibility" type="primary" circle>
-              <el-icon v-if="confirmNewPasswordVisible"><View /></el-icon>
+              <el-icon v-if="confirmNewPasswordVisible">
+                <View />
+              </el-icon>
             </ElButton>
           </template>
         </ElInput>
       </ElFormItem>
       <ElFormItem label="黑名单">
         <ElTable :data="localBlacklist.map(ip => ({ ip }))" style="width: 100%">
-          <ElTableColumn prop="ip" label="IP" width="180"/>
+          <ElTableColumn prop="ip" label="IP" width="180" />
           <ElTableColumn fixed="right" label="操作" width="100">
             <template #default="scope">
               <ElButton @click="removeBlacklistItem(scope.$index)" type="danger" size="small">删除</ElButton>
@@ -131,7 +137,7 @@ const removeBlacklistItem = (index: number) => {
 onMounted(() => {
   axios.get('/api/config', {
     headers: {
-      Authorization: `Bearer ${user.value.token}`
+      Authorization: `Bearer ${user.value?.token}`
     }
   }).then(res => {
     const config = res.data;
@@ -192,7 +198,7 @@ const submitEdit = () => {
 
   axios.post('/api/config', updates, {
     headers: {
-      Authorization: `Bearer ${user.value.token}`
+      Authorization: `Bearer ${user.value?.token}`
     }
   }).then(() => {
     ElMessage.success('配置已更新');

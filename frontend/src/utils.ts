@@ -2,8 +2,10 @@ import { ref } from "vue"
 
 export interface IPRecord {
   Time: number
-  LocalAddr: string
-  RemoteAddr: string
+  LocalIP: string
+  LocalPort: number
+  RemoteIP: string
+  RemotePort: number
   Executable: string
   Location: string
   Reason: string
