@@ -31,7 +31,9 @@ import VChart from 'vue-echarts'
 import moment from 'moment'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import markerIcon from 'leaflet/dist/images/marker-icon-2x.png'
 import { fetchGeoLocation, records } from '../utils'
+import { icon } from 'leaflet'
 
 use([
   CanvasRenderer,
@@ -193,10 +195,15 @@ onMounted(async () => {
     attribution: '&copy; OpenStreetMap contributors'
   }).addTo(map);
 
+  const defaultIcon = L.icon({
+    iconUrl: markerIcon,
+    iconAnchor: [10, 41]
+  })
+
   // Fetch geolocations and add markers
   for (const record of records.value) {
     const geoLocation = await fetchGeoLocation(record.RemoteIP);
-    const marker = L.marker([geoLocation.lat, geoLocation.lon]).addTo(map);
+    const marker = L.marker([geoLocation.lat, geoLocation.lon], { icon: defaultIcon }).addTo(map);
     marker.bindPopup(`IP:${record.RemoteIP},风险等级: ${record.Risk}`).openPopup();
   }
   // const ip = '46.27.127.255';
