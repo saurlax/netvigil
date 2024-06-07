@@ -82,13 +82,35 @@ func writeConfigHandler(c *gin.Context) {
 		c.JSON(400, gin.H{"error": err.Error()})
 		return
 	}
+
+	viper.SetConfigFile("config.toml")
+	if err := viper.ReadInConfig(); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if oldPassword, ok := updates["oldPassword"]; ok {
+		if newPassword, ok := updates["newPassword"]; ok {
+			if oldPassword != viper.GetString("password") {
+				c.JSON(401, gin.H{"error": "旧密码不正确"})
+				return
+			}
+			viper.Set("password", newPassword)
+		}
+		delete(updates, "oldPassword")
+		delete(updates, "newPassword")
+		delete(updates, "blacklist")
+	}
+
 	for key, value := range updates {
 		viper.Set(key, value)
 	}
+
 	if err := viper.WriteConfig(); err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(200, "ok")
 }
 

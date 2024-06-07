@@ -7,6 +7,7 @@ import Index from './pages/index.vue'
 import Records from './pages/records.vue'
 import Tix from './pages/tix.vue'
 import Login from './pages/login.vue'
+import EditConfig from './pages/edit.vue'
 
 import 'element-plus/dist/index.css'
 import './style.css'
@@ -29,6 +30,10 @@ const router = createRouter({
     path: '/tix',
     component: Tix,
     name: 'tix'
+  }, {
+    path: '/edit',
+    component: EditConfig,
+    name: 'editconfig'
   }]
 })
 
@@ -38,6 +43,3 @@ app.use(ElementPlus, {
   locale: zhCn,
 })
 app.mount('#app')
-
-
-
