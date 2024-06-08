@@ -183,6 +183,7 @@ onMounted(async () => {
   const bounds = L.latLngBounds(southWest, northEast);
 
   const map = L.map('map', {
+    attributionControl: false,
     zoom: initialZoomLevel, // 设置初始缩放级别
     minZoom: initialZoomLevel, // 设置最小缩放级别为初始缩放级别
     maxBounds: bounds, // 设置最大拖动边界
