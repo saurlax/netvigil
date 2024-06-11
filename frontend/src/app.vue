@@ -48,9 +48,10 @@ const navigate = (name: string) => {
       <ElScrollbar>
         <div class="logo"></div>
         <ElMenu :default-active="route.name?.toString()" @select="navigate">
-          <ElMenuItem index="home">统计数据</ElMenuItem>
-          <ElMenuItem index="records">情报记录</ElMenuItem>
-          <ElMenuItem index="tix">情报中心</ElMenuItem>
+          <ElMenuItem index="home">可视大屏</ElMenuItem>
+          <ElMenuItem>威胁情报</ElMenuItem>
+          <ElMenuItem index="records">网络流量</ElMenuItem>
+          <ElMenuItem index="config">配置文件</ElMenuItem>
           <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(() => { router.push('/login') })">退出登录
           </ElMenuItem>
         </ElMenu>

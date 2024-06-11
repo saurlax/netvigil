@@ -5,7 +5,7 @@ import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import Index from './pages/index.vue'
 import Records from './pages/records.vue'
-import Tix from './pages/tix.vue'
+import Config from './pages/config.vue'
 import Login from './pages/login.vue'
 import EditConfig from './pages/edit.vue'
 
@@ -27,9 +27,9 @@ const router = createRouter({
     component: Records,
     name: 'records'
   }, {
-    path: '/tix',
-    component: Tix,
-    name: 'tix'
+    path: '/config',
+    component: Config,
+    name: 'config'
   }, {
     path: '/edit',
     component: EditConfig,
