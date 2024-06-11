@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
-import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElInputNumber, ElSwitch, ElSkeleton, ElSpace } from 'element-plus'
+import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElInputNumber, ElSwitch, ElSkeleton, ElSpace, ElMessageBox } from 'element-plus'
 import { user } from '../utils'
 import { useRouter } from 'vue-router';
 
@@ -28,18 +28,20 @@ onMounted(() => {
 })
 
 const update = () => {
-  axios.post('/api/config', config.value, {
-    headers: {
-      Authorization: `Bearer ${user.value?.token}`
-    }
-  }).then(() => {
-    ElMessage.success('更新成功')
-  }).catch(e => {
-    if (e.response.status === 401) {
-      router.push('/login')
-    } else {
-      ElMessage.error(e.response.data.error)
-    }
+  ElMessageBox.confirm('确定要更新配置文件吗？').then(() => {
+    axios.post('/api/config', config.value, {
+      headers: {
+        Authorization: `Bearer ${user.value?.token}`
+      }
+    }).then(() => {
+      ElMessage.success('更新成功')
+    }).catch(e => {
+      if (e.response.status === 401) {
+        router.push('/login')
+      } else {
+        ElMessage.error(e.response.data.error)
+      }
+    })
   })
 }
 </script>
@@ -77,7 +79,7 @@ const update = () => {
       <ElSkeleton />
     </div>
     <ElFormItem>
-      <ElButton type="primary" @click="update">更新配置</ElButton>
+      <ElButton type="primary" @click="update">更新配置文件</ElButton>
     </ElFormItem>
   </ElForm>
 </template>
