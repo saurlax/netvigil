@@ -62,7 +62,7 @@ const update = () => {
         <ElInput v-model="config.username" />
       </ElFormItem>
       <ElFormItem label="管理密码">
-        <ElInput v-model="config.password" />
+        <ElInput v-model="config.password" type="password" />
       </ElFormItem>
       <ElFormItem label="情报中心" v-for="t in config.tix">
         <ElSpace class="tixs" direction="vertical" fill>
