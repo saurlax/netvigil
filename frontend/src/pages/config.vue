@@ -52,7 +52,7 @@ const update = () => {
       <ElFormItem label="抓包间隔">
         <ElInput v-model="config.capture_interval" />
       </ElFormItem>
-      <ElFormItem label="检查间隔">
+      <ElFormItem label="检测间隔">
         <ElInput v-model="config.check_interval" />
       </ElFormItem>
       <ElFormItem label="管理地址">
