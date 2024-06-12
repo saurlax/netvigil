@@ -8,7 +8,6 @@ import { user, netstats } from './utils'
 const route = useRoute()
 const router = useRouter()
 
-
 onMounted(() => {
   const userStorage = localStorage.getItem('user')
   if (userStorage) {
@@ -57,7 +56,7 @@ const navigate = (name: string) => {
         </ElMenu>
       </ElScrollbar>
     </ElAside>
-    <ElMain>
+    <ElMain :class="route.name">
       <ElScrollbar>
         <RouterView />
       </ElScrollbar>
@@ -107,5 +106,9 @@ const navigate = (name: string) => {
 .el-menu-item.is-active {
   background-color: white;
   border-color: var(--el-menu-active-color);
+}
+
+.el-main.home {
+  padding: 0;
 }
 </style>
