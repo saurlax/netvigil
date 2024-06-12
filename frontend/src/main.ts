@@ -6,7 +6,7 @@ import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import Login from './pages/login.vue'
 import Index from './pages/index.vue'
 import Threat from './pages/threat.vue'
-import Records from './pages/records.vue'
+import Netstat from './pages/netstat.vue'
 import Config from './pages/config.vue'
 
 import 'element-plus/dist/index.css'
@@ -27,9 +27,9 @@ const router = createRouter({
     component: Threat,
     name: 'threat'
   }, {
-    path: '/records',
-    component: Records,
-    name: 'records'
+    path: '/netstat',
+    component: Netstat,
+    name: 'netstat'
   }, {
     path: '/config',
     component: Config,

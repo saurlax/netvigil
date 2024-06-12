@@ -1,31 +1,31 @@
 <script setup lang="ts">
 import { ElTable, ElTableColumn, ElTooltip, TableColumnCtx } from 'element-plus'
-import { records, IPRecord } from '../utils'
+import { netstats, Netstat } from '../utils'
 import { computed } from 'vue'
 
-const getFilter = (records: IPRecord[], property: keyof IPRecord) => {
+const getFilter = (records: Netstat[], property: keyof Netstat) => {
   const values = new Set(records.map(record => record[property].toString()))
   return Array.from(values).map(value => ({ text: value, value: value }))
 }
 
 const filters = computed(() => {
   return {
-    Executable: getFilter(records.value, 'Executable'),
-    Location: getFilter(records.value, 'Location'),
-    Reason: getFilter(records.value, 'Reason'),
-    TIX: getFilter(records.value, 'TIX'),
+    Executable: getFilter(netstats.value, 'Executable'),
+    Location: getFilter(netstats.value, 'Location'),
+    Reason: getFilter(netstats.value, 'Reason'),
+    TIX: getFilter(netstats.value, 'TIX'),
   }
 })
 
-const filterHandler = (value: string, row: IPRecord, column: TableColumnCtx<IPRecord>) => {
-  const property = column['property'] as keyof IPRecord
+const filterHandler = (value: string, row: Netstat, column: TableColumnCtx<Netstat>) => {
+  const property = column['property'] as keyof Netstat
   return row[property] === value
 }
 
 </script>
 
 <template>
-  <ElTable :data="records" stripe>
+  <ElTable :data="netstats" stripe>
     <ElTableColumn prop="Time" label="时间" sortable>
       <template #default="scope">
         <span>{{ new Date(scope.row.Time).toLocaleString() }}</span>

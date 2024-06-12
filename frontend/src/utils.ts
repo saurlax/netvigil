@@ -1,6 +1,6 @@
 import { ref } from "vue"
 
-export interface IPRecord {
+export interface Netstat {
   Time: number
   LocalIP: string
   LocalPort: number
@@ -20,9 +20,9 @@ export interface User {
 }
 
 const user = ref<User>()
-const records = ref<IPRecord[]>([])
+const netstats = ref<Netstat[]>([])
 
-export { user, records }
+export { user, netstats }
 
 export const fetchGeoLocation = async (ip: any) => {
   try {

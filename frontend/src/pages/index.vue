@@ -32,7 +32,7 @@ import moment from 'moment'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon from 'leaflet/dist/images/marker-icon-2x.png'
-import { fetchGeoLocation, records } from '../utils'
+import { fetchGeoLocation, netstats } from '../utils'
 import { icon } from 'leaflet'
 
 use([
@@ -49,7 +49,7 @@ use([
 
 const statsChartData = computed(() => {
   const map: Record<string, number[]> = {}
-  for (const record of records.value) {
+  for (const record of netstats.value) {
     const day = moment(record.Time).format('YYYY-MM-DD')
     if (!map[day]) map[day] = [0, 0, 0, 0, 0]
     map[day][record.Risk]++
@@ -136,7 +136,7 @@ const last7DaysStats = computed(() => {
     '恶意': 0
   }
 
-  const last7Days = records.value.filter(record => {
+  const last7Days = netstats.value.filter(record => {
     return moment().diff(moment(record.Time), 'days') <= 7
   })
 
@@ -202,7 +202,7 @@ onMounted(async () => {
   })
 
   // Fetch geolocations and add markers
-  for (const record of records.value) {
+  for (const record of netstats.value) {
     const geoLocation = await fetchGeoLocation(record.RemoteIP);
     const marker = L.marker([geoLocation.lat, geoLocation.lon], { icon: defaultIcon }).addTo(map);
     marker.bindPopup(`IP:${record.RemoteIP},风险等级: ${record.Risk}`).openPopup();

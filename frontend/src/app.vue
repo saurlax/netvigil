@@ -3,7 +3,7 @@ import { onMounted, watch } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessage, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { user, records } from './utils'
+import { user, netstats } from './utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -25,7 +25,7 @@ watch(user, () => {
         Authorization: `Bearer ${user.value.token}`
       }
     }).then(res => {
-      records.value = res.data
+      netstats.value = res.data
     }).catch(e => {
       if (e.response.status === 401) {
         router.push('/login')
@@ -50,7 +50,7 @@ const navigate = (name: string) => {
         <ElMenu :default-active="route.name?.toString()" @select="navigate">
           <ElMenuItem index="home">可视大屏</ElMenuItem>
           <ElMenuItem index="threat">威胁情报</ElMenuItem>
-          <ElMenuItem index="records">网络流量</ElMenuItem>
+          <ElMenuItem index="netstat">网络流量</ElMenuItem>
           <ElMenuItem index="config">配置文件</ElMenuItem>
           <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(() => { router.push('/login') })">退出登录
           </ElMenuItem>
