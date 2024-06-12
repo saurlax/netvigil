@@ -49,7 +49,7 @@ const navigate = (name: string) => {
         <div class="logo"></div>
         <ElMenu :default-active="route.name?.toString()" @select="navigate">
           <ElMenuItem index="home">可视大屏</ElMenuItem>
-          <ElMenuItem>威胁情报</ElMenuItem>
+          <ElMenuItem index="threat">威胁情报</ElMenuItem>
           <ElMenuItem index="records">网络流量</ElMenuItem>
           <ElMenuItem index="config">配置文件</ElMenuItem>
           <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(() => { router.push('/login') })">退出登录

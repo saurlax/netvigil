@@ -3,11 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from './app.vue'
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
+import Login from './pages/login.vue'
 import Index from './pages/index.vue'
+import Threat from './pages/threat.vue'
 import Records from './pages/records.vue'
 import Config from './pages/config.vue'
-import Login from './pages/login.vue'
-import EditConfig from './pages/edit.vue'
 
 import 'element-plus/dist/index.css'
 import './style.css'
@@ -23,6 +23,10 @@ const router = createRouter({
     component: Index,
     name: 'home'
   }, {
+    path: '/threat',
+    component: Threat,
+    name: 'threat'
+  }, {
     path: '/records',
     component: Records,
     name: 'records'
@@ -30,10 +34,6 @@ const router = createRouter({
     path: '/config',
     component: Config,
     name: 'config'
-  }, {
-    path: '/edit',
-    component: EditConfig,
-    name: 'editconfig'
   }]
 })
 
