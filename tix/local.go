@@ -5,23 +5,23 @@ import (
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/saurlax/netvigil/netvigil"
+	"github.com/saurlax/netvigil/util"
 )
 
 type Local struct {
 	Blacklist []net.IP
 }
 
-func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
+func (t *Local) Check(netstats []netstat.SockTabEntry) []util.Record {
 	if len(t.Blacklist) == 0 {
 		return nil
 	}
-	records := make([]netvigil.Record, 0)
+	records := make([]util.Record, 0)
 	for _, e := range netstats {
 	Loop:
 		for _, banned := range t.Blacklist {
 			if e.RemoteAddr.IP.Equal(banned) {
-				records = append(records, netvigil.Record{
+				records = append(records, util.Record{
 					Time:       time.Now().UnixMilli(),
 					LocalIP:    e.LocalAddr.IP.String(),
 					LocalPort:  int(e.LocalAddr.Port),
@@ -30,13 +30,13 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 					TIX:        "Local",
 					Reason:     "Blacklisted",
 					Executable: e.Process.Name,
-					Risk:       netvigil.Malicious,
-					Confidence: netvigil.High,
+					Risk:       util.Malicious,
+					Confidence: util.High,
 				})
 				break Loop
 			}
 		}
-		records = append(records, netvigil.Record{
+		records = append(records, util.Record{
 			Time:       time.Now().UnixMilli(),
 			LocalIP:    e.LocalAddr.IP.String(),
 			LocalPort:  int(e.LocalAddr.Port),
@@ -45,8 +45,8 @@ func (t *Local) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 			TIX:        "Local",
 			Reason:     "",
 			Executable: e.Process.Name,
-			Risk:       netvigil.Unknown,
-			Confidence: netvigil.Low,
+			Risk:       util.Unknown,
+			Confidence: util.Low,
 		})
 	}
 	return records

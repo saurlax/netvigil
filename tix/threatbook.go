@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/saurlax/netvigil/netvigil"
+	"github.com/saurlax/netvigil/util"
 )
 
 type ThreatBook struct {
@@ -34,8 +34,8 @@ type ThreatBookResult struct {
 	} `json:"data"`
 }
 
-func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
-	var records []netvigil.Record
+func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []util.Record {
+	var records []util.Record
 	var resource []string
 	for _, v := range netstats {
 		if !v.RemoteAddr.IP.IsPrivate() {
@@ -75,28 +75,28 @@ func (t *ThreatBook) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
 	for _, e := range netstats {
 		for k, v := range result.Data {
 			if e.RemoteAddr.IP.String() == k {
-				var risk netvigil.RiskLevel
+				var risk util.RiskLevel
 				switch v.Severity {
 				default:
 				case "low":
-					risk = netvigil.Unknown
+					risk = util.Unknown
 				case "info":
-					risk = netvigil.Safe
+					risk = util.Safe
 				case "medium":
-					risk = netvigil.Suspicious
+					risk = util.Suspicious
 				case "high", "critical":
-					risk = netvigil.Malicious
+					risk = util.Malicious
 				}
-				var confidence netvigil.ConfidenceLevel
+				var confidence util.ConfidenceLevel
 				switch v.ConfidenceLevel {
 				default:
 				case "low":
-					confidence = netvigil.Low
+					confidence = util.Low
 				case "medium", "high":
-					confidence = netvigil.Medium
+					confidence = util.Medium
 				}
 
-				records = append(records, netvigil.Record{
+				records = append(records, util.Record{
 					Time:       time.Now().UnixMilli(),
 					LocalIP:    e.LocalAddr.IP.String(),
 					LocalPort:  int(e.LocalAddr.Port),

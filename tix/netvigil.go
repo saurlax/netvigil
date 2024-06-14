@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/saurlax/netvigil/netvigil"
+	"github.com/saurlax/netvigil/util"
 )
 
 type Netvigil struct {
@@ -21,11 +21,11 @@ type NetvigilRequest struct {
 }
 
 type NetvigilResponse struct {
-	Records []netvigil.Record `json:"records"`
+	Records []util.Record `json:"records"`
 }
 
-func (t *Netvigil) Check(netstats []netstat.SockTabEntry) []netvigil.Record {
-	var records []netvigil.Record
+func (t *Netvigil) Check(netstats []netstat.SockTabEntry) []util.Record {
+	var records []util.Record
 	var ips []string
 	for _, v := range netstats {
 		ips = append(ips, v.RemoteAddr.IP.String())

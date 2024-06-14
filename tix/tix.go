@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
-	"github.com/saurlax/netvigil/netvigil"
+	"github.com/saurlax/netvigil/util"
 	"github.com/spf13/viper"
 )
 
 // Threat Intelligence Center
 type TIX interface {
-	Check(netstats []netstat.SockTabEntry) []netvigil.Record
+	Check(netstats []netstat.SockTabEntry) []util.Record
 }
 
 var tixs = make([]TIX, 0)
@@ -46,7 +46,7 @@ func cheak() {
 Loop:
 	for {
 		select {
-		case e := <-netvigil.NetstatCh:
+		case e := <-util.NetstatCh:
 			entries = append(entries, e)
 		default:
 			break Loop

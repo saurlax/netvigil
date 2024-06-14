@@ -1,4 +1,4 @@
-package netvigil
+package util
 
 import (
 	"crypto/rand"
