@@ -35,11 +35,13 @@ func capture() {
 			continue
 		}
 		cache[key] = time.Now()
-		proc, err := ps.FindProcess(e.Process.Pid)
-		if err == nil && proc != nil {
-			path, err := proc.Path()
-			if err == nil {
-				e.Process.Name = path
+		if e.Process != nil {
+			proc, err := ps.FindProcess(e.Process.Pid)
+			if err == nil && proc != nil {
+				path, err := proc.Path()
+				if err == nil {
+					e.Process.Name = path
+				}
 			}
 		}
 		select {
