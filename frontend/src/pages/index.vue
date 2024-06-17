@@ -20,7 +20,6 @@ const option = computed(() => {
         name: '总威胁等级计数',
         seriesLayoutBy: 'row',
         encode: { itemName: 0, value: 8 },
-        roseType: 'radius',
         left: '70%',
         bottom: '70%'
       },
@@ -29,7 +28,6 @@ const option = computed(() => {
         name: '近七日威胁等级计数',
         seriesLayoutBy: 'row',
         encode: { itemName: 0, value: 7 },
-        roseType: 'radius',
         top: '30%',
         left: '70%',
         bottom: '40%'
