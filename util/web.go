@@ -39,13 +39,19 @@ func authHandler(c *gin.Context) {
 }
 
 func loginHandler(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
+	var req struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
 
-	if username == viper.GetString("username") && password == viper.GetString("password") {
+	if req.Username == viper.GetString("username") && req.Password == viper.GetString("password") {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"exp": time.Now().Add(time.Hour * 24).Unix(),
-			"sub": username,
+			"sub": req.Username,
 		})
 		tokenString, err := token.SignedString(secret)
 		if err != nil {

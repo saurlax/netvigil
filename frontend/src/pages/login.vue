@@ -12,7 +12,7 @@ const form = reactive({
 })
 
 const submit = async () => {
-  axios.postForm('/api/login', form).then(res => {
+  axios.post('/api/login', form).then(res => {
     user.value = {
       username: form.username,
       token: res.data.token
