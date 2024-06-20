@@ -11,13 +11,13 @@ import (
 )
 
 // Threat Intelligence Center
-type TIX interface {
+type TIC interface {
 	Check(netstats []netstat.SockTabEntry) []util.Record
 }
 
-var tixs = make([]TIX, 0)
+var tixs = make([]TIC, 0)
 
-func Create(m map[string]any) TIX {
+func Create(m map[string]any) TIC {
 	switch m["type"] {
 	case "local":
 		blacklist := make([]net.IP, 0)
