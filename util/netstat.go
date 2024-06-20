@@ -10,6 +10,7 @@ import (
 )
 
 type Netstat struct {
+	ID         int64
 	Time       int64  `json:"time"`
 	LocalIP    string `json:"local_ip"`
 	LocalPort  uint16 `json:"local_port"`
@@ -19,7 +20,7 @@ type Netstat struct {
 	Location   string `json:"location"`
 }
 
-var NetstatCh = make(chan Netstat, viper.GetInt("buffer_size"))
+var IPs = make(chan string, viper.GetInt("buffer_size"))
 
 // netstat obtained from the system at different times will be duplicated, using a cache to deduplicate
 //
@@ -70,20 +71,53 @@ func capture() {
 				}
 			}
 		}
+
 		select {
-		case NetstatCh <- n:
+		case IPs <- n.RemoteIP:
 		default:
-			// break when channel is full
+			// break if the channel is full
 			return
 		}
 	}
 }
 
 func init() {
+	DB.Exec("CREATE TABLE IF NOT EXISTS netstats (time INTEGER, local_ip TEXT, local_port INTEGER, remote_ip TEXT, remote_port INTEGER, executable TEXT, location TEXT)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON netstats (time)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_local_ip ON netstats (local_ip)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_local_port ON netstats (local_port)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_ip ON netstats (remote_ip)")
+	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_port ON netstats (remote_port)")
+
 	go func() {
 		for {
-			time.Sleep(viper.GetDuration("capture_interval"))
 			capture()
+			time.Sleep(viper.GetDuration("capture_interval"))
 		}
 	}()
+}
+
+func (n *Netstat) Save() error {
+	_, err := DB.Exec("INSERT INTO netstats (time, local_ip, local_port, remote_ip, remote_port, executable, location) VALUES (?, ?, ?, ?, ?, ?, ?)", n.Time, n.LocalIP, n.LocalPort, n.RemoteIP, n.RemotePort, n.Executable, n.Location)
+	return err
+}
+
+func GetNetstats(limit int, page int) ([]*Netstat, error) {
+	offset := limit * (page - 1)
+	rows, err := DB.Query("SELECT ROWID, time, local_ip, local_port, remote_ip, remote_port, executable, location FROM netstats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var netstats []*Netstat
+	for rows.Next() {
+		var n Netstat
+		err := rows.Scan(&n.ID, &n.Time, &n.LocalIP, &n.LocalPort, &n.RemoteIP, &n.RemotePort, &n.Executable, &n.Location)
+		if err != nil {
+			return nil, err
+		}
+		netstats = append(netstats, &n)
+	}
+	return netstats, nil
 }

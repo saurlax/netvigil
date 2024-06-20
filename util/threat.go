@@ -1,10 +1,16 @@
 package util
 
+import (
+	"fmt"
+	"strings"
+)
+
 type RiskLevel int
 type CredibilityLevel int
 
 // Threat Intelligence Record
 type Threat struct {
+	ID          int64
 	Time        int64
 	IP          string
 	TIC         string           // Intelligence source
@@ -42,7 +48,7 @@ func (t *Threat) Save() error {
 
 func GetThreats(limit int, page int) ([]*Threat, error) {
 	offset := limit * (page - 1)
-	rows, err := DB.Query("SELECT time, ip, tic, reason, risk, credibility FROM threats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
+	rows, err := DB.Query("SELECT ROWID, time, ip, tic, reason, risk, credibility FROM threats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +57,7 @@ func GetThreats(limit int, page int) ([]*Threat, error) {
 	var threats []*Threat
 	for rows.Next() {
 		var t Threat
-		err := rows.Scan(&t.Time, &t.IP, &t.TIC, &t.Reason, &t.Risk, &t.Credibility)
+		err := rows.Scan(&t.ID, &t.Time, &t.IP, &t.TIC, &t.Reason, &t.Risk, &t.Credibility)
 		if err != nil {
 			return nil, err
 		}
@@ -61,7 +67,17 @@ func GetThreats(limit int, page int) ([]*Threat, error) {
 }
 
 func GetThreatsByIPs(ips []string) ([]*Threat, error) {
-	rows, err := DB.Query("SELECT time, ip, tic, reason, risk, credibility FROM threats WHERE ip IN (?)", ips)
+	// Prepare the IN clause with the correct number of placeholders
+	placeholders := strings.Repeat("?,", len(ips)-1) + "?"
+	query := fmt.Sprintf("SELECT ROWID, time, ip, tic, reason, risk, credibility FROM threats WHERE ip IN (%s)", placeholders)
+
+	// Convert ips to a slice of interface{} for DB.Query
+	args := make([]any, len(ips))
+	for i, ip := range ips {
+		args[i] = ip
+	}
+
+	rows, err := DB.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +86,7 @@ func GetThreatsByIPs(ips []string) ([]*Threat, error) {
 	var threats []*Threat
 	for rows.Next() {
 		var t Threat
-		err := rows.Scan(&t.Time, &t.IP, &t.TIC, &t.Reason, &t.Risk, &t.Credibility)
+		err := rows.Scan(&t.ID, &t.Time, &t.IP, &t.TIC, &t.Reason, &t.Risk, &t.Credibility)
 		if err != nil {
 			return nil, err
 		}

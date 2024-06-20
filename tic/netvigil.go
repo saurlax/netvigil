@@ -1,4 +1,4 @@
-package tix
+package tic
 
 import (
 	"bytes"
