@@ -45,6 +45,11 @@ func (t *Threatbook) Check(ips []string) []util.Threat {
 		APIKey:   t.APIKey,
 		Resource: resource,
 	})
+	if err != nil {
+		fmt.Println("[Netvigil] Failed to marshal request:", err)
+		return threats
+	}
+
 	resp, err := http.Post("https://api.threatbook.cn/v3/scene/ip_reputation", "application/json", bytes.NewBuffer(req))
 	if err != nil {
 		fmt.Println("[Threatbook] Failed to request:", err)
