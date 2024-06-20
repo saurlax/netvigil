@@ -19,7 +19,7 @@ type Netstat struct {
 	Location   string `json:"location"`
 }
 
-var NetstatCh = make(chan Netstat, 2000)
+var NetstatCh = make(chan Netstat, viper.GetInt("buffer_size"))
 
 // netstat obtained from the system at different times will be duplicated, using a cache to deduplicate
 //

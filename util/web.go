@@ -65,7 +65,7 @@ func recordsHandler(c *gin.Context) {
 	if err != nil {
 		page = 0
 	}
-	records, err := GetRecords(200, page)
+	records, err := GetThreats(200, page)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
@@ -138,16 +138,22 @@ func checkHandler(c *gin.Context) {
 		return
 	}
 
-	records, err := GetRecordsByIPs(request.IPs)
+	threats, err := GetThreatsByIPs(request.IPs)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(200, records)
+	c.JSON(200, threats)
 }
 
 func init() {
+	addr := viper.GetString("web_addr")
+	// Disable web server if web_addr is not set
+	if addr == "" {
+		return
+	}
+
 	rand.Read(secret)
 	gin.SetMode(gin.ReleaseMode)
 	r := gin.Default()
@@ -159,7 +165,6 @@ func init() {
 	r.POST("/api/check", checkHandler)
 	r.NoRoute(staticHandler)
 
-	addr := viper.GetString("web")
 	fmt.Printf("Web server started on http://%s/\n", addr)
 	go r.Run(addr)
 }

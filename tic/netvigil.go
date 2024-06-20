@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/cakturk/go-netstat/netstat"
 	"github.com/saurlax/netvigil/util"
 )
 
@@ -20,42 +19,32 @@ type NetvigilRequest struct {
 	IPs   []string `json:"ips"`
 }
 
-type NetvigilResponse struct {
-	Records []util.Record `json:"records"`
-}
+type NetvigilResponse []util.Threat
 
-func (t *Netvigil) Check(netstats []netstat.SockTabEntry) []util.Record {
-	var records []util.Record
-	var ips []string
-	for _, v := range netstats {
-		ips = append(ips, v.RemoteAddr.IP.String())
-	}
-	if len(ips) == 0 {
-		return records
-	}
-
+func (t *Netvigil) Check(ips []string) []util.Threat {
+	var threats []util.Threat
 	requestBody, err := json.Marshal(NetvigilRequest{
 		Token: t.Token,
 		IPs:   ips,
 	})
 	if err != nil {
 		fmt.Println("[Netvigil] Failed to marshal request:", err)
-		return records
+		return threats
 	}
 
-	res, err := http.Post(fmt.Sprintf("%s/api/check", t.Server), "application/json", bytes.NewBuffer(requestBody))
+	resp, err := http.Post(fmt.Sprintf("%s/api/check", t.Server), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		fmt.Println("[Netvigil] Failed to request:", err)
-		return records
+		return threats
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
-	var response NetvigilResponse
-	err = json.NewDecoder(res.Body).Decode(&response)
+	var res NetvigilResponse
+	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		fmt.Println("[Netvigil] Failed to decode response:", err)
-		return records
+		return threats
 	}
 
-	return response.Records
+	return res
 }

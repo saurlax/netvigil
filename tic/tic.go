@@ -3,20 +3,25 @@ package tix
 import (
 	"fmt"
 	"net"
-	"time"
 
-	"github.com/cakturk/go-netstat/netstat"
 	"github.com/saurlax/netvigil/util"
 	"github.com/spf13/viper"
 )
 
 // Threat Intelligence Center
 type TIC interface {
-	Check(netstats []netstat.SockTabEntry) []util.Record
+	Check(ips []string) []util.Threat
 }
 
-var tixs = make([]TIC, 0)
+var tics = make([]TIC, 0)
 
+// Create a TIC instance with config like
+//
+// ```
+// [[tix]]
+// type = "local"
+// xxx = "xxx"
+// ```
 func Create(m map[string]any) TIC {
 	switch m["type"] {
 	case "local":
@@ -28,7 +33,7 @@ func Create(m map[string]any) TIC {
 			Blacklist: blacklist,
 		}
 	case "threatbook":
-		return &ThreatBook{
+		return &Threatbook{
 			APIKey: m["apikey"].(string),
 		}
 	case "netvigil":
@@ -41,27 +46,13 @@ func Create(m map[string]any) TIC {
 	}
 }
 
-func cheak() {
-	entries := make([]netstat.SockTabEntry, 0)
-Loop:
-	for {
-		select {
-		case e := <-util.NetstatCh:
-			entries = append(entries, e)
-		default:
-			break Loop
-		}
+// Check all IPs with all TICs created
+func Check(ips []string) []util.Threat {
+	threats := make([]util.Threat, 0)
+	for _, tic := range tics {
+		threats = append(threats, tic.Check(ips)...)
 	}
-	for _, tix := range tixs {
-		records := tix.Check(entries)
-		for _, record := range records {
-			record.Action()
-			err := record.Save()
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
+	return threats
 }
 
 func init() {
@@ -73,15 +64,8 @@ func init() {
 		}
 		tix := Create(m)
 		if tix != nil {
-			fmt.Printf("[TIX] %s created\n", m["type"])
-			tixs = append(tixs, tix)
+			fmt.Printf("[TIC] %s created\n", m["type"])
+			tics = append(tics, tix)
 		}
-	}
-}
-
-func Run() {
-	for {
-		time.Sleep(viper.GetDuration("check_interval"))
-		cheak()
 	}
 }
