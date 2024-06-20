@@ -35,8 +35,6 @@ func authHandler(c *gin.Context) {
 		c.Abort()
 		return
 	}
-
-	c.Set("username", token.Claims.(jwt.MapClaims)["sub"])
 	c.Next()
 }
 
@@ -60,7 +58,7 @@ func loginHandler(c *gin.Context) {
 	}
 }
 
-func recordsHandler(c *gin.Context) {
+func threatsHandler(c *gin.Context) {
 	page, err := strconv.Atoi(c.Param("page"))
 	if err != nil {
 		page = 0
@@ -83,27 +81,8 @@ func writeConfigHandler(c *gin.Context) {
 		return
 	}
 
-	viper.SetConfigFile("config.toml")
-	if err := viper.ReadInConfig(); err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
-		return
-	}
-
-	if oldPassword, ok := updates["oldPassword"]; ok {
-		if newPassword, ok := updates["newPassword"]; ok {
-			if oldPassword != viper.GetString("password") {
-				c.JSON(401, gin.H{"error": "旧密码不正确"})
-				return
-			}
-			viper.Set("password", newPassword)
-		}
-		delete(updates, "oldPassword")
-		delete(updates, "newPassword")
-		delete(updates, "blacklist")
-	}
-
-	for key, value := range updates {
-		viper.Set(key, value)
+	for k, v := range updates {
+		viper.Set(k, v)
 	}
 
 	if err := viper.WriteConfig(); err != nil {
@@ -128,17 +107,17 @@ func staticHandler(c *gin.Context) {
 }
 
 func checkHandler(c *gin.Context) {
-	var request struct {
+	var req struct {
 		Token string   `json:"token"`
 		IPs   []string `json:"ips"`
 	}
 
-	if err := c.BindJSON(&request); err != nil {
+	if err := c.BindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
 		return
 	}
 
-	threats, err := GetThreatsByIPs(request.IPs)
+	threats, err := GetThreatsByIPs(req.IPs)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -159,7 +138,7 @@ func init() {
 	r := gin.Default()
 
 	r.POST("/api/login", loginHandler)
-	r.GET("/api/records", authHandler, recordsHandler)
+	r.GET("/api/threats", authHandler, threatsHandler)
 	r.GET("/api/config", authHandler, readConfigHandler)
 	r.POST("/api/config", authHandler, writeConfigHandler)
 	r.POST("/api/check", checkHandler)
