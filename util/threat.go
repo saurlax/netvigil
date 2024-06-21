@@ -13,10 +13,10 @@ type Threat struct {
 	ID          int64
 	Time        int64            `json:"time"`
 	IP          string           `json:"ip"`
-	TIC         string           `json:"tic"`         // Intelligence source
-	Reason      string           `json:"reason"`      // The reason for the corresponding risk value
-	Risk        RiskLevel        `json:"risk"`        // The risk level of IP
-	Credibility CredibilityLevel `json:"credibility"` // The credibility level of intelligence
+	TIC         string           `json:"tic"`
+	Reason      string           `json:"reason"`
+	Risk        RiskLevel        `json:"risk"`
+	Credibility CredibilityLevel `json:"credibility"`
 }
 
 const (
