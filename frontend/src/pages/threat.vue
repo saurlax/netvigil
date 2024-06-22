@@ -1,5 +1,5 @@
 <script setup lang="tsx">
-import { ElAutoResizer, ElTableV2 } from 'element-plus'
+import { ElAutoResizer, ElButton, ElTableV2 } from 'element-plus'
 import { credibilityLevel, riskLevel, threats } from '../utils'
 import { computed } from 'vue'
 import dayjs from 'dayjs'
@@ -39,7 +39,10 @@ const columns = [{
   title: '可信度',
   dataKey: 'credibility',
   width: 100
-
+}, {
+  key: 'action',
+  width: 100,
+  cellRenderer: () => (<ElButton type="danger" size="small">删除</ElButton>)
 }]
 
 const data = computed(() => threats.value.map(n => {
