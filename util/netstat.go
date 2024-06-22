@@ -10,12 +10,12 @@ import (
 )
 
 type Netstat struct {
-	ID         int64
+	ID         int64  `json:"id"`
 	Time       int64  `json:"time"`
-	LocalIP    string `json:"local_ip"`
-	LocalPort  uint16 `json:"local_port"`
-	RemoteIP   string `json:"remote_ip"`
-	RemotePort uint16 `json:"remote_port"`
+	LocalIP    string `json:"localIP"`
+	LocalPort  uint16 `json:"localPort"`
+	RemoteIP   string `json:"remoteIP"`
+	RemotePort uint16 `json:"remotePort"`
 	Executable string `json:"executable"`
 	Location   string `json:"location"`
 }

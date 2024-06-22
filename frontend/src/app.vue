@@ -3,7 +3,7 @@ import { onMounted, watch } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessage, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { user, netstats } from './utils'
+import { user, netstats, threats } from './utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -19,12 +19,26 @@ onMounted(() => {
 
 watch(user, () => {
   if (user.value) {
-    axios.get('/api/records', {
+    axios.get('/api/netstats', {
       headers: {
         Authorization: `Bearer ${user.value.token}`
       }
     }).then(res => {
       netstats.value = res.data
+    }).catch(e => {
+      if (e.response.status === 401) {
+        router.push('/login')
+      } else {
+        ElMessage.error(e.response.data.error ?? e.message)
+      }
+    })
+
+    axios.get('/api/threats', {
+      headers: {
+        Authorization: `Bearer ${user.value.token}`
+      }
+    }).then(res => {
+      threats.value = res.data
     }).catch(e => {
       if (e.response.status === 401) {
         router.push('/login')
@@ -57,9 +71,7 @@ const navigate = (name: string) => {
       </ElScrollbar>
     </ElAside>
     <ElMain :class="route.name">
-      <ElScrollbar>
-        <RouterView />
-      </ElScrollbar>
+      <RouterView />
     </ElMain>
   </ElContainer>
 </template>

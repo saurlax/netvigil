@@ -19,21 +19,19 @@ func main() {
 }
 
 func init() {
-	captureInterval := viper.GetDuration("capture_interval")
-	checkInterval := viper.GetDuration("check_interval")
-	if captureInterval > 0 {
+	if viper.GetDuration("capture_interval") > 0 {
 		go func() {
 			for {
 				util.Capture()
-				time.Sleep(captureInterval)
+				time.Sleep(viper.GetDuration("capture_interval"))
 			}
 		}()
 	}
-	if checkInterval > 0 {
+	if viper.GetDuration("check_interval") > 0 {
 		go func() {
 			for {
 				tic.Check()
-				time.Sleep(checkInterval)
+				time.Sleep(viper.GetDuration("check_interval"))
 			}
 		}()
 	}

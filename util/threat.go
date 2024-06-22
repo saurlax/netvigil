@@ -10,7 +10,7 @@ type CredibilityLevel int
 
 // Threat Intelligence Record
 type Threat struct {
-	ID          int64
+	ID          int64            `json:"id"`
 	Time        int64            `json:"time"`
 	IP          string           `json:"ip"`
 	TIC         string           `json:"tic"`

@@ -1,54 +1,49 @@
-<script setup lang="ts">
-import { ElTable, ElTableColumn, ElTooltip, TableColumnCtx } from 'element-plus'
-import { netstats, Netstat } from '../utils'
+<script setup lang="tsx">
+import { ElAutoResizer, ElTableV2, ElTooltip } from 'element-plus'
+import { netstats } from '../utils'
 import { computed } from 'vue'
+import dayjs from 'dayjs'
 
-const getFilter = (records: Netstat[], property: keyof Netstat) => {
-  const values = new Set(records.map(record => record[property].toString()))
-  return Array.from(values).map(value => ({ text: value, value: value }))
-}
-
-const filters = computed(() => {
-  return {
-    Executable: getFilter(netstats.value, 'Executable'),
-    Location: getFilter(netstats.value, 'Location'),
-    Reason: getFilter(netstats.value, 'Reason'),
-    TIX: getFilter(netstats.value, 'TIX'),
+const columns = [{
+  title: '记录时间',
+  dataKey: 'time',
+  width: 200
+}, {
+  title: '本地地址',
+  dataKey: 'local',
+  width: 200
+}, {
+  title: '远程地址',
+  dataKey: 'remote',
+  width: 200
+}, {
+  title: '发起程序',
+  dataKey: 'executable',
+  width: 200,
+  cellRenderer: ({ cellData: executable }: { cellData: string }) => {
+    const match = executable.match(/([^\\\/]+)$/)
+    return <ElTooltip content={executable}>{match ? match[0] : executable}</ElTooltip>
   }
-})
+}, {
+  title: '位置',
+  dataKey: 'location',
+  width: 200
+}]
 
-const filterHandler = (value: string, row: Netstat, column: TableColumnCtx<Netstat>) => {
-  const property = column['property'] as keyof Netstat
-  return row[property] === value
-}
-
+const data = computed(() => netstats.value.map(n => {
+  return {
+    ...n,
+    time: dayjs(n.time).format('YYYY-MM-DD HH:mm:ss'),
+    local: `${n.localIP}:${n.localPort}`,
+    remote: `${n.remoteIP}:${n.remotePort}`,
+  }
+}))
 </script>
 
 <template>
-  <ElTable :data="netstats" stripe>
-    <ElTableColumn prop="Time" label="时间" sortable>
-      <template #default="scope">
-        <span>{{ new Date(scope.row.Time).toLocaleString() }}</span>
-      </template>
-    </ElTableColumn>
-    <ElTableColumn prop="LocalIP" label="本地地址" sortable :formatter="row => `${row.LocalIP}:${row.LocalPort}`">
-    </ElTableColumn>
-    <ElTableColumn prop="RemoteIP" label="远程地址" sortable :formatter="row => `${row.RemoteIP}:${row.RemotePort}`">
-    </ElTableColumn>
-    <ElTableColumn prop="Executable" label="发起程序" sortable :filters="filters.Executable" :filter-method="filterHandler">
-      <template #default="scope">
-        <ElTooltip :content="scope.row.Executable">
-          <span>{{ scope.row.Executable.match(/([^\\\/]+)$/)[0] }}</span>
-        </ElTooltip>
-      </template>
-    </ElTableColumn>
-    <ElTableColumn prop="Location" label="位置" sortable :filters="filters.Location" :filter-method="filterHandler">
-    </ElTableColumn>
-    <ElTableColumn prop="Reason" label="原因" sortable :filters="filters.Reason" :filter-method="filterHandler">
-    </ElTableColumn>
-    <ElTableColumn prop="Risk" label="威胁度" sortable></ElTableColumn>
-    <ElTableColumn prop="TIX" label="情报中心" sortable :filters="filters.TIX" :filter-method="filterHandler">
-    </ElTableColumn>
-    <ElTableColumn prop="Confidence" label="可信度" sortable></ElTableColumn>
-  </ElTable>
+  <ElAutoResizer>
+    <template #default="{ height, width }">
+      <ElTableV2 :columns :data :height :width />
+    </template>
+  </ElAutoResizer>
 </template>

@@ -65,6 +65,19 @@ end
 ### Types
 
 ```go
+type Netstat struct {
+	ID         int64
+	Time       int64  `json:"time"`
+	LocalIP    string `json:"localIP"`
+	LocalPort  uint16 `json:"localPort"`
+	RemoteIP   string `json:"remoteIP"`
+	RemotePort uint16 `json:"remotePort"`
+	Executable string `json:"executable"`
+	Location   string `json:"location"`
+}
+```
+
+```go
 type Threat struct {
 	ID          int64
 	Time        int64            `json:"time"`
@@ -73,19 +86,6 @@ type Threat struct {
 	Reason      string           `json:"reason"`     
 	Risk        RiskLevel        `json:"risk"`      
 	Credibility CredibilityLevel `json:"credibility"`
-}
-```
-
-```go
-type Netstat struct {
-	ID         int64
-	Time       int64  `json:"time"`
-	LocalIP    string `json:"local_ip"`
-	LocalPort  uint16 `json:"local_port"`
-	RemoteIP   string `json:"remote_ip"`
-	RemotePort uint16 `json:"remote_port"`
-	Executable string `json:"executable"`
-	Location   string `json:"location"`
 }
 ```
 
