@@ -6,10 +6,10 @@ web = '127.0.0.1:8080'
 username = 'admin'
 password = 'admin'
 
-[[tix]]
+[[tic]]
 type = 'local'
 blacklist = ['1.1.1.1']
 
-# [[tix]]
+# [[tic]]
 # type = 'threatbook'
 # apikey = 'xxx'

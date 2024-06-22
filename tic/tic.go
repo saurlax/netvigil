@@ -81,16 +81,16 @@ Loop:
 }
 
 func init() {
-	config := viper.Get("tix").([]any)
+	config := viper.Get("tic").([]any)
 	for _, v := range config {
 		m, ok := v.(map[string]any)
 		if !ok {
 			break
 		}
-		tix := Create(m)
-		if tix != nil {
+		tic := Create(m)
+		if tic != nil {
 			fmt.Printf("[TIC] %s created\n", m["type"])
-			tics = append(tics, tix)
+			tics = append(tics, tic)
 		}
 	}
 }

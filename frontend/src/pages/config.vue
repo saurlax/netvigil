@@ -64,8 +64,8 @@ const update = () => {
       <ElFormItem label="管理密码">
         <ElInput v-model="config.password" type="password" />
       </ElFormItem>
-      <ElFormItem label="情报中心" v-for="t in config.tix">
-        <ElSpace class="tixs" direction="vertical" fill>
+      <ElFormItem label="情报中心" v-for="t in config.tic">
+        <ElSpace class="tics" direction="vertical" fill>
           <ElFormItem v-for="(v, k, _) in t" :label="k.toString()">
             <ElInput disabled v-if="typeof v === 'string'" :value="v" />
             <ElInputNumber disabled v-else-if="typeof v === 'number'" :value="v" />
@@ -85,7 +85,7 @@ const update = () => {
 </template>
 
 <style scoped>
-.tixs {
+.tics {
   flex-grow: 1;
 }
 </style>
