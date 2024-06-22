@@ -26,7 +26,6 @@ export interface Threat {
   credibility: CredibilityLevel
 }
 
-
 export enum RiskLevel {
   Safe, Normal, Suspicious, Malicious, Unknown
 }
@@ -34,6 +33,9 @@ export enum RiskLevel {
 export enum CredibilityLevel {
   Low, Medium, High,
 }
+
+export const riskLevel = ['安全', '正常', '可疑', '恶意', '未知']
+export const credibilityLevel = ['低', '中', '高']
 
 export const user = ref<User>()
 export const netstats = ref<Netstat[]>([])
