@@ -3,11 +3,15 @@ import { computed } from 'vue'
 import 'echarts'
 import 'echarts-gl'
 import VChart from 'vue-echarts'
+import { stats } from '../utils';
+
+console.log(stats.value);
+
 
 const option = computed(() => {
   return {
     dataset: {
-      // source: stats.value,
+      source: stats.value,
     },
     color: ['#5470c6', '#91cc75', '#73c0de', '#fac858', '#ee6666'],
     title: [
@@ -18,20 +22,11 @@ const option = computed(() => {
     series: [
       {
         type: 'pie',
-        name: '总威胁等级计数',
+        name: '近七日威胁度',
         seriesLayoutBy: 'row',
         encode: { itemName: 0, value: 8 },
         left: '70%',
         bottom: '70%'
-      },
-      {
-        type: 'pie',
-        name: '近七日威胁等级计数',
-        seriesLayoutBy: 'row',
-        encode: { itemName: 0, value: 7 },
-        top: '30%',
-        left: '70%',
-        bottom: '40%'
       },
     ],
     globe: {

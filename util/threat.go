@@ -20,7 +20,8 @@ type Threat struct {
 }
 
 const (
-	Safe       RiskLevel = iota // Confirmed to be safe, usually used for whitelists
+	Unknown    RiskLevel = iota // Unknown risk level
+	Safe                        // Confirmed to be safe, usually used for whitelists
 	Normal                      // Normal IP
 	Suspicious                  // Suspected of attack, IP addresses that require special attention
 	Malicious                   // Confirmed as malicious IP
