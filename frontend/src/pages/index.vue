@@ -3,10 +3,7 @@ import { computed } from 'vue'
 import 'echarts'
 import 'echarts-gl'
 import VChart from 'vue-echarts'
-import { stats } from '../utils';
-
-console.log(stats.value);
-
+import { stats } from '../utils'
 
 const option = computed(() => {
   return {
