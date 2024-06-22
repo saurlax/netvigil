@@ -20,7 +20,7 @@ type Netstat struct {
 	Location   string `json:"location"`
 }
 
-var IPs = make(chan string, viper.GetInt("buffer_size"))
+var IPs chan string
 
 // netstat obtained from the system at different times will be duplicated, using a cache to deduplicate
 //
@@ -32,7 +32,8 @@ var filter = func(s *netstat.SockTabEntry) bool {
 	return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
 }
 
-func capture() {
+// Capture network traffic information
+func Capture() {
 	for e, t := range cache {
 		if time.Since(t) > 60*time.Second {
 			delete(cache, e)
@@ -72,6 +73,8 @@ func capture() {
 			}
 		}
 
+		n.Save()
+
 		select {
 		case IPs <- n.RemoteIP:
 		default:
@@ -82,19 +85,13 @@ func capture() {
 }
 
 func init() {
+	IPs = make(chan string, viper.GetInt("buffer_size"))
 	DB.Exec("CREATE TABLE IF NOT EXISTS netstats (time INTEGER, local_ip TEXT, local_port INTEGER, remote_ip TEXT, remote_port INTEGER, executable TEXT, location TEXT)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON netstats (time)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_local_ip ON netstats (local_ip)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_local_port ON netstats (local_port)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_ip ON netstats (remote_ip)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_remote_port ON netstats (remote_port)")
-
-	go func() {
-		for {
-			capture()
-			time.Sleep(viper.GetDuration("capture_interval"))
-		}
-	}()
 }
 
 func (n *Netstat) Save() error {

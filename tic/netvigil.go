@@ -19,10 +19,10 @@ type NetvigilRequest struct {
 	IPs   []string `json:"ips"`
 }
 
-type NetvigilResponse []util.Threat
+type NetvigilResponse []*util.Threat
 
-func (t *Netvigil) Check(ips []string) []util.Threat {
-	var threats []util.Threat
+func (t *Netvigil) Check(ips []string) []*util.Threat {
+	var threats []*util.Threat
 	requestBody, err := json.Marshal(NetvigilRequest{
 		Token: t.Token,
 		IPs:   ips,

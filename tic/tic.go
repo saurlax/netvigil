@@ -10,18 +10,12 @@ import (
 
 // Threat Intelligence Center
 type TIC interface {
-	Check(ips []string) []util.Threat
+	Check(ips []string) []*util.Threat
 }
 
 var tics = make([]TIC, 0)
 
-// Create a TIC instance with config like
-//
-// ```
-// [[tix]]
-// type = "local"
-// xxx = "xxx"
-// ```
+// Create a TIC instance with config
 func Create(m map[string]any) TIC {
 	switch m["type"] {
 	case "local":
@@ -47,12 +41,43 @@ func Create(m map[string]any) TIC {
 }
 
 // Check all IPs with all TICs created
-func Check(ips []string) []util.Threat {
-	threats := make([]util.Threat, 0)
+func CheckIPs(ips []string) []*util.Threat {
+	threats, _ := util.GetThreatsByIPs(ips)
+	ips2check := make([]string, 0)
+Loop:
+	for _, ip := range ips {
+		for _, t := range threats {
+			if ip == t.IP {
+				continue Loop
+			}
+		}
+		ips2check = append(ips2check, ip)
+	}
+	if len(ips2check) == 0 {
+		return threats
+	}
 	for _, tic := range tics {
-		threats = append(threats, tic.Check(ips)...)
+		for _, t := range tic.Check(ips2check) {
+			t.Save()
+			threats = append(threats, t)
+		}
 	}
 	return threats
+}
+
+// Check all captured IPs
+func Check() {
+	ips := make([]string, 0)
+Loop:
+	for {
+		select {
+		case ip := <-util.IPs:
+			ips = append(ips, ip)
+		default:
+			break Loop
+		}
+	}
+	CheckIPs(ips)
 }
 
 func init() {

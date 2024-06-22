@@ -67,6 +67,9 @@ func GetThreats(limit int, page int) ([]*Threat, error) {
 }
 
 func GetThreatsByIPs(ips []string) ([]*Threat, error) {
+	if len(ips) == 0 {
+		return nil, nil
+	}
 	// Prepare the IN clause with the correct number of placeholders
 	placeholders := strings.Repeat("?,", len(ips)-1) + "?"
 	query := fmt.Sprintf("SELECT ROWID, time, ip, tic, reason, risk, credibility FROM threats WHERE ip IN (%s)", placeholders)

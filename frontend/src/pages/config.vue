@@ -21,7 +21,7 @@ onMounted(() => {
       if (e.response.status === 401) {
         router.push('/login')
       } else {
-        ElMessage.error(e.response.data.error)
+        ElMessage.error(e.response.data.error ?? e.message)
       }
     })
   }
@@ -39,7 +39,7 @@ const update = () => {
       if (e.response.status === 401) {
         router.push('/login')
       } else {
-        ElMessage.error(e.response.data.error)
+        ElMessage.error(e.response.data.error ?? e.message)
       }
     })
   })

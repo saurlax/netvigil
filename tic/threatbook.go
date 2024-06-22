@@ -1,11 +1,11 @@
 package tic
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -14,11 +14,6 @@ import (
 
 type Threatbook struct {
 	APIKey string
-}
-
-type ThreatbookRequest struct {
-	APIKey   string   `json:"apikey"`
-	Resource []string `json:"resource"`
 }
 
 type ThreatbookResponse struct {
@@ -31,8 +26,8 @@ type ThreatbookResponse struct {
 	} `json:"data"`
 }
 
-func (t *Threatbook) Check(ips []string) []util.Threat {
-	var threats []util.Threat
+func (t *Threatbook) Check(ips []string) []*util.Threat {
+	var threats []*util.Threat
 	var resource []string
 
 	for _, ip := range ips {
@@ -41,16 +36,10 @@ func (t *Threatbook) Check(ips []string) []util.Threat {
 		}
 	}
 
-	req, err := json.Marshal(ThreatbookRequest{
-		APIKey:   t.APIKey,
-		Resource: resource,
+	resp, err := http.PostForm("https://api.threatbook.cn/v3/scene/ip_reputation", url.Values{
+		"apikey":   {t.APIKey},
+		"resource": resource,
 	})
-	if err != nil {
-		fmt.Println("[Netvigil] Failed to marshal request:", err)
-		return threats
-	}
-
-	resp, err := http.Post("https://api.threatbook.cn/v3/scene/ip_reputation", "application/json", bytes.NewBuffer(req))
 	if err != nil {
 		fmt.Println("[Threatbook] Failed to request:", err)
 		return threats
@@ -64,8 +53,7 @@ func (t *Threatbook) Check(ips []string) []util.Threat {
 		return threats
 	}
 	if res.ResponseCode != 0 {
-		fmt.Printf("[Threatbook] Abnormal response (%v): %v", res.ResponseCode, res.VerBoseMsg)
-		return threats
+		fmt.Printf("[Threatbook] Abnormal response (%v): %v\n", res.ResponseCode, res.VerBoseMsg)
 	}
 
 	for ip, data := range res.Data {
@@ -73,25 +61,26 @@ func (t *Threatbook) Check(ips []string) []util.Threat {
 		var credibility util.CredibilityLevel
 
 		switch data.Severity {
-		case "info":
-		case "low":
+		case "info", "low":
 			risk = util.Normal
+		case "high", "critical":
+			risk = util.Malicious
 		case "medium":
 			risk = util.Suspicious
-		case "high":
-		case "critical":
-			risk = util.Malicious
+		default:
+			risk = util.Normal
 		}
 
 		switch data.ConfidenceLevel {
 		case "low":
 			credibility = util.Low
-		case "medium":
-		case "high":
-			credibility = util.High
+		case "medium", "high":
+			credibility = util.Medium
+		default:
+			credibility = util.Low
 		}
 
-		threats = append(threats, util.Threat{
+		threats = append(threats, &util.Threat{
 			Time:        time.Now().UnixMilli(),
 			IP:          ip,
 			TIC:         "Threatbook",

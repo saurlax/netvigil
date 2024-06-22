@@ -12,12 +12,12 @@ type Local struct {
 	WhiteList []net.IP
 }
 
-func (t *Local) Check(ips []string) []util.Threat {
-	threats := make([]util.Threat, 0)
+func (t *Local) Check(ips []string) []*util.Threat {
+	threats := make([]*util.Threat, 0)
 	for _, ip := range ips {
 		for _, black := range t.Blacklist {
 			if black.Equal(net.ParseIP(ip)) {
-				threats = append(threats, util.Threat{
+				threats = append(threats, &util.Threat{
 					Time:        time.Now().UnixMilli(),
 					IP:          ip,
 					TIC:         "Local",
@@ -29,7 +29,7 @@ func (t *Local) Check(ips []string) []util.Threat {
 		}
 		for _, white := range t.WhiteList {
 			if white.Equal(net.ParseIP(ip)) {
-				threats = append(threats, util.Threat{
+				threats = append(threats, &util.Threat{
 					Time:        time.Now().UnixMilli(),
 					IP:          ip,
 					TIC:         "Local",
