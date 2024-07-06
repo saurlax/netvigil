@@ -15,6 +15,7 @@
 go.work
 
 *.db
+*.mmdb
 dist
 /config.toml
 
