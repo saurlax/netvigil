@@ -2,8 +2,10 @@ package util
 
 import (
 	"fmt"
+	"net"
 	"time"
 
+	"github.com/IncSW/geoip2"
 	"github.com/cakturk/go-netstat/netstat"
 	"github.com/keybase/go-ps"
 	"github.com/spf13/viper"
@@ -71,6 +73,26 @@ func Capture() {
 					n.Executable = path
 				}
 			}
+		}
+		// get the location of the IP address
+
+		reader, err := geoip2.NewCityReaderFromFile("./GeoLite2-City.mmdb")
+		if err != nil {
+			panic(err)
+		}
+		ip := net.ParseIP(n.RemoteIP)
+		record, err := reader.Lookup(ip)
+		if err != nil {
+			n.Location = "Unknown"
+		} else {
+			location := ""
+			if record.Country.Names["zh-CN"] != "" {
+				location += record.Country.Names["zh-CN"]
+			}
+			if record.City.Names["zh-CN"] != "" {
+				location += " " + record.City.Names["zh-CN"]
+			}
+			n.Location = location
 		}
 
 		n.Save()
