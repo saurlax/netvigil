@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/IncSW/geoip2 v0.1.2 // indirect
 	github.com/bytedance/sonic v1.11.5 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.3 // indirect

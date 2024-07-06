@@ -1,3 +1,5 @@
+github.com/IncSW/geoip2 v0.1.2 h1:v7iAyDiNZjHES45P1JPM3SMvkw0VNeJtz0XSVxkRwOY=
+github.com/IncSW/geoip2 v0.1.2/go.mod h1:adcasR40vXiUBjtzdaTTKL/6wSf+fgO4M8Gve/XzPUk=
 github.com/bytedance/sonic v1.11.5 h1:G00FYjjqll5iQ1PYXynbg/hyzqBqavH8Mo9/oTopd9k=
 github.com/bytedance/sonic v1.11.5/go.mod h1:X2PC2giUdj/Cv2lliWFLk6c/DUQok5rViJSemeB0wDw=
 github.com/bytedance/sonic/loader v0.1.0/go.mod h1:UmRT+IRTGKz/DAkzcEGzyVqQFJ7H9BqwBO3pm9H/+HY=

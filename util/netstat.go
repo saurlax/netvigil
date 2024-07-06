@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
@@ -62,6 +63,28 @@ func Capture() {
 			RemoteIP:   e.RemoteAddr.IP.String(),
 			RemotePort: e.RemoteAddr.Port,
 		}
+
+		// get the location of the IP address
+		ip := net.ParseIP(n.RemoteIP)
+		record, err := GeoLiteCity.Lookup(ip)
+		if err == nil {
+			countryName := record.Country.Names["zh-CN"]
+			if countryName == "" {
+				countryName = record.Country.Names["en"]
+			}
+			cityName := record.City.Names["zh-CN"]
+			if cityName == "" {
+				cityName = record.City.Names["en"]
+			}
+			n.Location = countryName
+			if cityName != "" {
+				if n.Location != "" {
+					n.Location += " "
+				}
+				n.Location += cityName
+			}
+		}
+
 		// get the executable path of the process
 		if e.Process != nil {
 			proc, err := ps.FindProcess(e.Process.Pid)

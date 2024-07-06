@@ -27,7 +27,9 @@ $ cd ..
 $ go build .
 ```
 
-In order to run the program correctly, you also need to provide a configuration file. You can directly rename `config.example.toml` to `config.toml` to use the default configuration.
+In order to run the program correctly, you also need to provide a configuration file. You can directly copy `config.example.toml` and rename to `config.toml` to use the default configuration.
+
+In addition, you also need to provide a copy of `GeoLite2-City.mmdb` in the root directory, which you can find at [GeoLite2 Website](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data).
 
 ## Workflow
 
@@ -93,15 +95,16 @@ type Threat struct {
 
 * `invalid go version '1.21.6': must match format 1.23`
 
-Upgrade your `go` version to at least `1.21.6`
+  Upgrade your `go` version to at least `1.21.6`
 
 * `Binary was compiled with 'CGO ENABLED=0', go-sqlite3 requires cgo to work. This is a stub`
 
-Add `CGO_ENABLED=1` to your user environment variable. If env is correctly set, you will see `set CGO_ENABLED=1` with the fllowing command
-```bash
-$ go env
-```
+  Add `CGO_ENABLED=1` to your user environment variable. If env is correctly set, you will see `set CGO_ENABLED=1` with the fllowing command
+
+  ```bash
+  $ go env
+  ```
 
 * `cgo: C compiler "gcc" not found: exec: "gcc": executable file not found in %PATH%`
 
-Install `gcc` to fix it
+  Install `gcc` to fix it
