@@ -54,9 +54,10 @@ To compile this project, you need to install Node.js and Go in advance.
 Firstly, build frontend resources
 
 ```bash
+# install pnpm first if you haven't: npm i -g pnpm
 cd frontend
-npm i
-npm run build
+pnpm i
+pnpm run build
 ```
 
 Then, build go project
