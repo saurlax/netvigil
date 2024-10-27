@@ -71,6 +71,7 @@ func netstatsHandler(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
 	c.JSON(200, records)
+
 }
 
 func threatsHandler(c *gin.Context) {
@@ -78,12 +79,36 @@ func threatsHandler(c *gin.Context) {
 	records, err := GetThreats(viper.GetInt("page_size"), page)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
+		return
 	}
+
 	c.JSON(200, records)
 }
-
 func readConfigHandler(c *gin.Context) {
 	c.JSON(200, viper.AllSettings())
+}
+
+func threatsOperationHandler(c *gin.Context) {
+	var req struct {
+		ID     int    `json:"id"`
+		Action string `json:"action"`
+	}
+
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
+	if req.Action == "remove" {
+		result, err := DB.Exec("DELETE FROM threats WHERE ROWID = ?", req.ID)
+		if err != nil {
+			c.JSON(500, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(200, result)
+	} else {
+		c.JSON(400, gin.H{"error": err.Error()})
+	}
 }
 
 func writeConfigHandler(c *gin.Context) {
@@ -152,6 +177,7 @@ func init() {
 	r.POST("/api/login", loginHandler)
 	r.GET("/api/netstats", authHandler, netstatsHandler)
 	r.GET("/api/threats", authHandler, threatsHandler)
+	r.POST("/api/threats", authHandler, threatsOperationHandler)
 	r.GET("/api/config", authHandler, readConfigHandler)
 	r.POST("/api/config", authHandler, writeConfigHandler)
 	r.POST("/api/check", checkHandler)
