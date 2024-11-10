@@ -5,42 +5,23 @@ import 'echarts-gl'
 import VChart from 'vue-echarts'
 import { stats } from '../utils'
 
-const option = computed(() => {
+const mainOption = computed(() => {
   return {
     dataset: {
       source: stats.value,
     },
     color: ['#5470c6', '#91cc75', '#73c0de', '#fac858', '#ee6666'],
-    title: [
-      // TODO: use grid
-    ],
     legend: {},
     tooltip: {},
-    series: [
-      {
-        type: 'pie',
-        name: '近七日威胁度',
-        seriesLayoutBy: 'row',
-        encode: { itemName: 0, value: 8 },
-        left: '70%',
-        bottom: '70%'
-      },
-    ],
+    series: [],
     globe: {
       baseTexture: '/assets/earth.webp',
       heightTexture: '/assets/height.webp',
-      environment: '/assets/starfield.webp',
-      globeRadius: 80,
+      // environment: '/assets/starfield.webp',
+      top: '10%',
+      globeRadius: 60,
       displacementScale: 0.1,
       shading: 'lambert',
-      light: {
-        main: {
-          intensity: 1
-        },
-        ambient: {
-          intensity: 0.2
-        },
-      },
       layers: [
         {
           type: 'blend',
@@ -57,15 +38,135 @@ const option = computed(() => {
     }
   }
 })
+
+const pieViewOption = computed(() => {
+  return {
+    dataset: {
+      source: stats.value,
+    }, backgroundColor: '',
+    color: ['#5470c6', '#91cc75', '#73c0de', '#fac858', '#ee6666'],
+    tooltip: {},
+    series: [
+      {
+        type: 'pie',
+        seriesLayoutBy: 'row',
+        encode: { itemName: 0, value: 8 },
+      },
+    ],
+  }
+})
 </script>
 
 <template>
-  <VChart class="chart" :option="option" theme="dark" autoresize />
+  <div class="panel">
+    <VChart class="main-chart" :option="mainOption" theme="dark" autoresize />
+    <div class="panel-title">
+      <span>qwq</span>
+      <h2>全球威胁态势</h2>
+      <span>awa</span>
+    </div>
+    <div class="panel-stats">
+      {{ stats }}
+    </div>
+    <div class="subviews">
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>近七日威胁度</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize />
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-.chart {
-  width: 100%;
+.panel {
+  position: relative;
   height: 100vh;
+}
+
+.panel-title {
+  position: absolute;
+  top: 0;
+  width: 100%;
+  height: 10%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  user-select: none;
+}
+
+.panel-title h2 {
+  font-size: 1.5rem;
+}
+
+.panel-stats {
+  position: absolute;
+  top: 10%;
+  left: 28%;
+  right: 28%;
+  height: 100px;
+  margin: 0 10px;
+  padding: 10px;
+  color: gold;
+  border: #4992f14d 1px solid;
+}
+
+.main-chart {
+  position: absolute;
+  top: 0;
+  height: 100%;
+}
+
+.subviews {
+  position: absolute;
+  top: 10%;
+  width: 100%;
+  height: 90%;
+  display: grid;
+  grid-template-columns: repeat(2, 28%);
+  grid-template-rows: repeat(3, 30%);
+  justify-content: space-between;
+  gap: 20px;
+  pointer-events: none;
+}
+
+.subview-chart {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background-image: radial-gradient(#4482c99c, transparent);
+  border: #4992f14d 1px solid;
+  pointer-events: auto;
+}
+
+.subview-chart h3 {
+  margin: 0;
+  padding: 10px 0;
+  color: white;
+  text-shadow: 0 1px 2px black;
+  font-size: 16px;
+  text-align: center;
+  font-weight: normal;
+  user-select: none;
 }
 </style>
