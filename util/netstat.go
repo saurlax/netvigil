@@ -2,11 +2,14 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"net"
+	"sync"
 	"time"
 
-	"github.com/cakturk/go-netstat/netstat"
-	"github.com/keybase/go-ps"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
 	"github.com/spf13/viper"
 )
 
@@ -28,83 +31,117 @@ var IPs chan string
 // key: LocalIP:LcoalPort-RemoteIP:RemotePort, value: time
 var cache = make(map[string]time.Time)
 
-// In theory, no TIC can detect loopback addresses
-var filter = func(s *netstat.SockTabEntry) bool {
-	return s.State == netstat.Established && !s.RemoteAddr.IP.IsLoopback()
-}
-
 // Capture network traffic information
 func Capture() {
+
 	for e, t := range cache {
 		if time.Since(t) > 60*time.Second {
 			delete(cache, e)
 		}
 	}
 
-	// get all tcp and udp sockets
-	tcps, _ := netstat.TCPSocks(filter)
-	tcp6s, _ := netstat.TCP6Socks(filter)
-	udps, _ := netstat.UDPSocks(filter)
-	udp6s, _ := netstat.UDP6Socks(filter)
-	entries := append(append(append(tcps, tcp6s...), udps...), udp6s...)
-
-	for _, e := range entries {
-		key := fmt.Sprintf("%s-%s", e.LocalAddr.String(), e.RemoteAddr.String())
-		// continue if the entry is already in the cache
-		if _, ok := cache[key]; ok {
-			continue
-		}
-		cache[key] = time.Now()
-
-		n := Netstat{
-			Time:       time.Now().UnixMilli(),
-			LocalIP:    e.LocalAddr.IP.String(),
-			LocalPort:  e.LocalAddr.Port,
-			RemoteIP:   e.RemoteAddr.IP.String(),
-			RemotePort: e.RemoteAddr.Port,
-		}
-
-		// get the location of the IP address
-		ip := net.ParseIP(n.RemoteIP)
-		record, err := GeoLiteCity.Lookup(ip)
-		if err == nil {
-			countryName := record.Country.Names["zh-CN"]
-			if countryName == "" {
-				countryName = record.Country.Names["en"]
-			}
-			cityName := record.City.Names["zh-CN"]
-			if cityName == "" {
-				cityName = record.City.Names["en"]
-			}
-			n.Location = countryName
-			if cityName != "" {
-				if n.Location != "" {
-					n.Location += " "
-				}
-				n.Location += cityName
-			}
-		}
-
-		// get the executable path of the process
-		if e.Process != nil {
-			proc, err := ps.FindProcess(e.Process.Pid)
-			if err == nil && proc != nil {
-				path, err := proc.Path()
-				if err == nil {
-					n.Executable = path
-				}
-			}
-		}
-
-		n.Save()
-
-		select {
-		case IPs <- n.RemoteIP:
-		default:
-			// break if the channel is full
-			return
-		}
+	devices, err := pcap.FindAllDevs()
+	if err != nil {
+		log.Fatal(err)
 	}
+
+	var wg sync.WaitGroup
+
+	// Open pcap device
+	for _, device := range devices {
+		wg.Add(1) // Increment the WaitGroup counter for each device
+
+		// Launch a goroutine to capture packets for each device
+		go func(device pcap.Interface) {
+			defer wg.Done() // Decrement the WaitGroup counter when the goroutine finishes
+
+			handle, err := pcap.OpenLive(device.Name, 1600, true, -1)
+			if err != nil {
+				log.Printf("Error opening device %s: %v\n", device.Name, err)
+				return
+			}
+			defer handle.Close()
+
+			// Set a timeout for each device capture (2 seconds)
+			timer := time.NewTimer(2 * time.Second)
+			defer timer.Stop()
+
+			packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+			log.Printf("Starting capture on device: %s\n", device.Name)
+
+			// Capture packets until the timeout is reached
+			for {
+				select {
+				case packet := <-packetSource.Packets():
+					ipLayer := packet.Layer(layers.LayerTypeIPv4)
+					if ipLayer != nil {
+						ip := ipLayer.(*layers.IPv4)
+
+						// Skip loopback addresses (127.0.0.1)
+						if ip.SrcIP.IsLoopback() || ip.DstIP.IsLoopback() {
+							continue
+						}
+
+						key := fmt.Sprintf("%s-%s", ip.SrcIP.String(), ip.DstIP.String())
+
+						// Continue if the entry is already in the cache
+						if _, ok := cache[key]; ok {
+							continue
+						}
+
+						log.Printf("Processing connection: %s\n", key)
+						cache[key] = time.Now()
+
+						n := Netstat{
+							Time:       time.Now().UnixMilli(),
+							LocalIP:    ip.SrcIP.String(),
+							LocalPort:  0,
+							RemoteIP:   ip.DstIP.String(),
+							RemotePort: 0,
+						}
+
+						// Get the location of the IP address
+						ipAddr := net.ParseIP(n.RemoteIP)
+						record, err := GeoLiteCity.Lookup(ipAddr)
+						if err == nil {
+							countryName := record.Country.Names["zh-CN"]
+							if countryName == "" {
+								countryName = record.Country.Names["en"]
+							}
+							cityName := record.City.Names["zh-CN"]
+							if cityName == "" {
+								cityName = record.City.Names["en"]
+							}
+							n.Location = countryName
+							if cityName != "" {
+								if n.Location != "" {
+									n.Location += " "
+								}
+								n.Location += cityName
+							}
+						}
+
+						n.Save()
+
+						// Send the remote IP address to the channel
+						select {
+						case IPs <- n.RemoteIP:
+						default:
+							// If the channel is full, exit the goroutine
+							return
+						}
+					}
+				// Timeout, stop capturing and move to the next device
+				case <-timer.C:
+					log.Printf("Capture timeout reached for device %s\n", device.Name)
+					return
+				}
+			}
+		}(device) // Pass the device to the goroutine
+	}
+
+	// Wait for all goroutines to finish before exiting the function
+	wg.Wait()
 }
 
 func init() {
