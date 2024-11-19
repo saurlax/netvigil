@@ -164,8 +164,8 @@ func checkHandler(c *gin.Context) {
 }
 
 func init() {
-	addr := viper.GetString("web_addr")
-	// Disable web server if web_addr is not set
+	addr := viper.GetString("web")
+	// Disable web server if is not set
 	if addr == "" {
 		return
 	}

@@ -3,17 +3,16 @@ module github.com/saurlax/netvigil
 go 1.21.6
 
 require (
-	github.com/cakturk/go-netstat v0.0.0-20200220111822-e5b49efee7a5
+	github.com/IncSW/geoip2 v0.1.2
 	github.com/gen2brain/beeep v0.0.0-20240112042604-c7bb2cd88fea
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/keybase/go-ps v0.0.0-20190827175125-91aafc93ba19
+	github.com/google/gopacket v1.1.19
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/spf13/viper v1.18.2
 )
 
 require (
-	github.com/IncSW/geoip2 v0.1.2 // indirect
 	github.com/bytedance/sonic v1.11.5 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
 	github.com/cloudwego/base64x v0.1.3 // indirect

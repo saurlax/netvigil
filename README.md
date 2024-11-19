@@ -45,13 +45,7 @@ Here is all TICs you can use:
 
 In addition, you also need to provide a copy of `GeoLite2-City.mmdb` in the root directory, which you can find at [GeoLite2 Website](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data).
 
-After that, you can run the executable file of the project.
-
-### Compile from source
-
-To compile this project, you need to install Node.js and Go in advance.
-
-Firstly, build frontend resources
+After that, build frontend resources
 
 ```bash
 # install pnpm first if you haven't: npm i -g pnpm
@@ -60,10 +54,11 @@ pnpm i
 pnpm run build
 ```
 
-Then, build go project
+Then, run go project
 
 ```bash
 cd ..
+go get
 go build .
 ```
 
@@ -144,4 +139,3 @@ type Threat struct {
 - `cgo: C compiler "gcc" not found: exec: "gcc": executable file not found in %PATH%`
 
   Install `gcc` to fix it
-
