@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/saurlax/netvigil/util"
@@ -28,13 +29,13 @@ func (t *Netvigil) Check(ips []string) []*util.Threat {
 		IPs:   ips,
 	})
 	if err != nil {
-		fmt.Println("[Netvigil] Failed to marshal request:", err)
+		log.Println("[Netvigil] Failed to marshal request:", err)
 		return threats
 	}
 
 	resp, err := http.Post(fmt.Sprintf("%s/api/check", t.Server), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
-		fmt.Println("[Netvigil] Failed to request:", err)
+		log.Println("[Netvigil] Failed to request:", err)
 		return threats
 	}
 	defer resp.Body.Close()
@@ -42,7 +43,7 @@ func (t *Netvigil) Check(ips []string) []*util.Threat {
 	var res NetvigilResponse
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		fmt.Println("[Netvigil] Failed to decode response:", err)
+		log.Println("[Netvigil] Failed to decode response:", err)
 		return threats
 	}
 

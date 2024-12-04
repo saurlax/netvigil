@@ -1,9 +1,10 @@
 package tic
 
 import (
-	"fmt"
+	"log"
 	"net"
 
+	"github.com/google/gopacket/layers"
 	"github.com/saurlax/netvigil/util"
 	"github.com/spf13/viper"
 )
@@ -15,8 +16,8 @@ type TIC interface {
 
 var tics = make([]TIC, 0)
 
-// Create a TIC instance with config
-func Create(m map[string]any) TIC {
+// create a TIC instance with config
+func create(m map[string]any) TIC {
 	switch m["type"] {
 	case "local":
 		blacklist := make([]net.IP, 0)
@@ -41,7 +42,7 @@ func Create(m map[string]any) TIC {
 }
 
 // Check all IPs with all TICs created
-func CheckIPs(ips []string) []*util.Threat {
+func CheckAll(ips []string) []*util.Threat {
 	threats, _ := util.GetThreatsByIPs(ips)
 	ips2check := make([]string, 0)
 Loop:
@@ -71,13 +72,22 @@ func Check() {
 Loop:
 	for {
 		select {
-		case ip := <-util.IPs:
-			ips = append(ips, ip)
+		case packet := <-util.Packets:
+			ipv4Layer := packet.Layer(layers.LayerTypeIPv4)
+			if ipv4Layer != nil {
+				ip := ipv4Layer.(*layers.IPv4)
+				ips = append(ips, ip.DstIP.String())
+			}
+			ipv6Layer := packet.Layer(layers.LayerTypeIPv6)
+			if ipv6Layer != nil {
+				ip := ipv6Layer.(*layers.IPv6)
+				ips = append(ips, ip.DstIP.String())
+			}
 		default:
 			break Loop
 		}
 	}
-	CheckIPs(ips)
+	CheckAll(ips)
 }
 
 func init() {
@@ -87,9 +97,9 @@ func init() {
 		if !ok {
 			break
 		}
-		tic := Create(m)
+		tic := create(m)
 		if tic != nil {
-			fmt.Printf("[TIC] %s created\n", m["type"])
+			log.Printf("[TIC] %s created\n", m["type"])
 			tics = append(tics, tic)
 		}
 	}

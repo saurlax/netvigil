@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,18 +16,11 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	<-sig
+	log.Println("Shutting down...")
 	util.DB.Close()
 }
 
 func init() {
-	if viper.GetDuration("capture_interval") > 0 {
-		go func() {
-			for {
-				util.Capture()
-				time.Sleep(viper.GetDuration("capture_interval"))
-			}
-		}()
-	}
 	if viper.GetDuration("check_interval") > 0 {
 		go func() {
 			for {

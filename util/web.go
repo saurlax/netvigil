@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/rand"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -183,6 +184,6 @@ func init() {
 	r.POST("/api/check", checkHandler)
 	r.NoRoute(staticHandler)
 
-	fmt.Printf("Web server started on http://%s/\n", addr)
+	log.Printf("Web server started on http://%s/\n", addr)
 	go r.Run(addr)
 }

@@ -2,7 +2,7 @@ package tic
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/url"
@@ -41,7 +41,7 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 		"resource": resource,
 	})
 	if err != nil {
-		fmt.Println("[Threatbook] Failed to request:", err)
+		log.Println("[Threatbook] Failed to request:", err)
 		return threats
 	}
 	defer resp.Body.Close()
@@ -49,11 +49,11 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 	var res ThreatbookResponse
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		fmt.Println("[Threatbook] Failed to decode response:", err)
+		log.Println("[Threatbook] Failed to decode response:", err)
 		return threats
 	}
 	if res.ResponseCode != 0 {
-		fmt.Printf("[Threatbook] Abnormal response (%v): %v\n", res.ResponseCode, res.VerBoseMsg)
+		log.Printf("[Threatbook] Abnormal response (%v): %v\n", res.ResponseCode, res.VerBoseMsg)
 	}
 
 	for ip, data := range res.Data {

@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 
@@ -35,15 +36,15 @@ func DelFireWall(ip string) {
 }
 
 func suspiciousAction(n Netstat) {
-	AddFireWall(n.RemoteIP)
-	fmt.Printf("\x1B[33mSuspicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.RemoteIP)
-	beeep.Notify("Suspicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.RemoteIP), "")
+	AddFireWall(n.DstIP)
+	log.Printf("\x1B[33mSuspicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.DstIP)
+	beeep.Notify("Suspicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }
 
 func maliciousAction(n Netstat) {
-	AddFireWall(n.RemoteIP)
-	fmt.Printf("\x1B[31mMalicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.RemoteIP)
-	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.RemoteIP), "")
+	AddFireWall(n.DstIP)
+	log.Printf("\x1B[31mMalicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.DstIP)
+	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }
 
 func (t Threat) Action(n Netstat) {
