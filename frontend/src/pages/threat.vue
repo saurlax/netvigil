@@ -1,9 +1,10 @@
 <script setup lang="tsx">
 import { ElAutoResizer, ElButton, ElTableV2 } from 'element-plus'
 import { credibilityLevel, riskLevel, threats } from '../utils'
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 
+// const threats = ref([])
 const columns = [{
   key: 'id',
   title: 'ID',
@@ -45,20 +46,21 @@ const columns = [{
   cellRenderer: () => (<ElButton type="danger" size="small">删除</ElButton>)
 }]
 
-const data = computed(() => threats.value.map(n => {
-  return {
+const data = computed(() => {
+  if (!threats.value) return []
+  return threats.value.map(n => ({
     ...n,
     time: dayjs(n.time).format('YYYY-MM-DD HH:mm:ss'),
     risk: `${riskLevel[n.risk]}(${n.risk})`,
     credibility: `${credibilityLevel[n.credibility]}(${n.credibility})`,
-  }
-}))
+  }))
+})
 </script>
 
 <template>
   <ElAutoResizer>
     <template #default="{ height, width }">
-      <ElTableV2 :columns :data :height :width />
+      <ElTableV2 :columns="columns" :data="data || []" :height="height" :width="width" />
     </template>
   </ElAutoResizer>
 </template>
