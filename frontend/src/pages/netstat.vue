@@ -1,9 +1,10 @@
 <script setup lang="tsx">
 import { ElAutoResizer, ElTableV2, ElTooltip } from 'element-plus'
 import { netstats } from '../utils'
-import { computed } from 'vue'
+import { ref,computed } from 'vue'
 import dayjs from 'dayjs'
 
+// const netstats = ref([])
 const columns = [{
   key: 'id',
   title: 'ID',
@@ -43,9 +44,11 @@ const columns = [{
 const data = computed(() => netstats.value.map(n => {
   return {
     ...n,
-    time: dayjs(n.time).format('YYYY-MM-DD HH:mm:ss'),
-    local: `${n.localIP}:${n.localPort}`,
-    remote: `${n.remoteIP}:${n.remotePort}`,
+    time: n.time ? dayjs(n.time).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
+    local: n.localIP && n.localPort ? `${n.localIP}:${n.localPort}` : '未知地址',
+    remote: n.remoteIP && n.remotePort ? `${n.remoteIP}:${n.remotePort}` : '未知地址',
+    location: n.location || '未知位置',
+    executable: n.executable || '未知程序'
   }
 }))
 </script>
@@ -53,7 +56,7 @@ const data = computed(() => netstats.value.map(n => {
 <template>
   <ElAutoResizer>
     <template #default="{ height, width }">
-      <ElTableV2 :columns :data :height :width />
+      <ElTableV2 :columns :data="data || []" :height :width />
     </template>
   </ElAutoResizer>
 </template>
