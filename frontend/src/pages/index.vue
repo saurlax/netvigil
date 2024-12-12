@@ -55,6 +55,60 @@ const pieViewOption = computed(() => {
     ],
   }
 })
+
+const barFrequencyOption = computed(() => {
+  return {
+    dataset: {
+      source: stats.value,
+    },
+    color: ['#73c0de', '#fac858', '#ee6666'],
+    tooltip: {},
+    xAxis: { type: 'category' },
+    yAxis: { type: 'value' },
+    series: [
+      {
+        type: 'bar',
+        encode: { x: 0, y: [3, 4, 5] }, // 使用“可疑、恶意”的统计数据
+      },
+    ],
+  }
+})
+
+const barGeoRankingOption = computed(() => {
+  return {
+    dataset: {
+      source: stats.value,
+    },
+    color: ['#91cc75'],
+    tooltip: {},
+    xAxis: { type: 'category' },
+    yAxis: { type: 'value' },
+    series: [
+      {
+        type: 'bar',
+        encode: { x: 0, y: 8 }, // 假设第 8 列是地理排名数据
+      },
+    ],
+  }
+})
+
+const lineTrendOption = computed(() => {
+  return {
+    dataset: {
+      source: stats.value,
+    },
+    color: ['#5470c6'],
+    tooltip: {},
+    xAxis: { type: 'category' },
+    yAxis: { type: 'value' },
+    series: [
+      {
+        type: 'line',
+        encode: { x: 0, y: 8 }, // 使用趋势数据列
+      },
+    ],
+  }
+})
 </script>
 
 <template>
@@ -74,23 +128,23 @@ const pieViewOption = computed(() => {
         <VChart :option="pieViewOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>近七日威胁度</h3>
-        <VChart :option="pieViewOption" theme="dark" autoresize />
+        <h3>可疑及以上威胁度的频率</h3>
+        <VChart :option="barFrequencyOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>近七日威胁度</h3>
-        <VChart :option="pieViewOption" theme="dark" autoresize />
+        <h3>地理位置排名</h3>
+        <VChart :option="barGeoRankingOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>近七日威胁度</h3>
-        <VChart :option="pieViewOption" theme="dark" autoresize />
+        <h3>威胁度走势</h3>
+        <VChart :option="lineTrendOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>近七日威胁度</h3>
-        <VChart :option="pieViewOption" theme="dark" autoresize />
+        <h3>情报来源占比</h3>
+        <VChart :option="pieViewOption" theme="dark" autoresize /> 
       </div>
       <div class="subview-chart">
-        <h3>近七日威胁度</h3>
+        <h3>To be continue</h3>
         <VChart :option="pieViewOption" theme="dark" autoresize />
       </div>
     </div>

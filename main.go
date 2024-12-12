@@ -23,6 +23,7 @@ func main() {
 func init() {
 	if viper.GetDuration("check_interval") > 0 {
 		go func() {
+			util.StartStatisticsJob()
 			for {
 				tic.Check()
 				time.Sleep(viper.GetDuration("check_interval"))
