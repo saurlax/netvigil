@@ -16,6 +16,10 @@ In order to run the program correctly, you need to create a `config.toml` file i
 capture_interval = '2s'
 check_interval = '10s'
 
+# The statistics period
+# if you don't set it,the default value 60 is used
+stat_period = 60
+
 # The url of the web interface
 # leave it empty if you don't want to use the web interface
 web = '127.0.0.1:8080'
