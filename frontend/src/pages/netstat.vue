@@ -15,14 +15,14 @@ const columns = [{
   dataKey: 'time',
   width: 200
 }, {
-  key: 'local',
+  key: 'src',
   title: '本地地址',
-  dataKey: 'local',
+  dataKey: 'src',
   width: 200
 }, {
-  key: 'remote',
+  key: 'dst',
   title: '远程地址',
-  dataKey: 'remote',
+  dataKey: 'dst',
   width: 200
 }, {
   key: 'location',
@@ -44,8 +44,8 @@ const data = computed(() => netstats.value.map(n => {
   return {
     ...n,
     time: dayjs(n.time).format('YYYY-MM-DD HH:mm:ss'),
-    local: `${n.localIP}:${n.localPort}`,
-    remote: `${n.remoteIP}:${n.remotePort}`,
+    src: `${n.srcIP}:${n.srcPort}`,
+    dst: `${n.dstIP}:${n.dstPort}`,
   }
 }))
 </script>

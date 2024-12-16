@@ -67,11 +67,11 @@ func loginHandler(c *gin.Context) {
 
 func netstatsHandler(c *gin.Context) {
 	page, _ := strconv.Atoi(c.Param("page"))
-	records, err := GetNetstats(viper.GetInt("page_size"), page)
+	netstats, err := GetNetstats(viper.GetInt("page_size"), page)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
-	c.JSON(200, records)
+	c.JSON(200, netstats)
 
 }
 
