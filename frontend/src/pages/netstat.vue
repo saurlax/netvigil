@@ -1,7 +1,7 @@
 <script setup lang="tsx">
 import { ElAutoResizer, ElTableV2, ElTooltip } from 'element-plus'
 import { netstats } from '../utils'
-import { ref,computed } from 'vue'
+import { computed } from 'vue'
 import dayjs from 'dayjs'
 
 // const netstats = ref([])
@@ -45,8 +45,8 @@ const data = computed(() => netstats.value.map(n => {
   return {
     ...n,
     time: n.time ? dayjs(n.time).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
-    local: n.localIP && n.localPort ? `${n.localIP}:${n.localPort}` : '未知地址',
-    remote: n.remoteIP && n.remotePort ? `${n.remoteIP}:${n.remotePort}` : '未知地址',
+    src: n.srcIP && n.srcPort ? `${n.srcIP}:${n.srcPort}` : '未知地址',
+    dst: n.dstIP && n.dstPort ? `${n.dstIP}:${n.dstPort}` : '未知地址',
     location: n.location || '未知位置',
     executable: n.executable || '未知程序'
   }
