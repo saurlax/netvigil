@@ -2,7 +2,6 @@ package tic
 
 import (
 	"log"
-	"net"
 	"time"
 
 	"github.com/saurlax/netvigil/util"
@@ -20,13 +19,7 @@ var tics = make([]TIC, 0)
 func create(m map[string]any) TIC {
 	switch m["type"] {
 	case "local":
-		blacklist := make([]net.IP, 0)
-		for _, v := range m["blacklist"].([]any) {
-			blacklist = append(blacklist, net.ParseIP(v.(string)))
-		}
-		return &Local{
-			Blacklist: blacklist,
-		}
+		return &Local{}
 	case "threatbook":
 		return &Threatbook{
 			APIKey: m["apikey"].(string),
