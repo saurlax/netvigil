@@ -21,7 +21,7 @@ type NetvigilRequest struct {
 	IPs   []string `json:"ips"`
 }
 
-func (t *Netvigil) Check(netstats []util.Netstat) []util.Result {
+func (t *Netvigil) Check(netstats []*util.Netstat) []util.Result {
 	var results []util.Result
 	var threats []util.Threat
 	var ips []string
@@ -58,14 +58,14 @@ func (t *Netvigil) Check(netstats []util.Netstat) []util.Result {
 		return results
 	}
 
-	for _, netstat := range netstats {
-		for _, threat := range threats {
-			if netstat.DstIP == threat.IP {
+	for _, n := range netstats {
+		for _, t := range threats {
+			if n.DstIP == t.IP {
 				results = append(results, util.Result{
-					Time:    netstat.Time,
-					IP:      netstat.DstIP,
-					Netstat: &netstat,
-					Threat:  &threat,
+					Time:    n.Time,
+					IP:      n.DstIP,
+					Netstat: n,
+					Threat:  &t,
 				})
 			}
 		}
