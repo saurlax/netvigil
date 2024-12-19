@@ -55,6 +55,6 @@ func (stats *Statistics) Update() error {
 }
 
 func init() {
-	DB.Exec("CREATE TABLE IF NOT EXISTS statistics (time INTEGER, risk_unknown_count INTEGER, risk_safe_count INTEGER, risk_normal_count INTEGER, risk_suspicious_count INTEGER, risk_malicious_count INTEGER, credibility_low_count INTEGER, credibility_medium_count INTEGER, credibility_high_count INTEGER)")
+	DB.Exec("CREATE TABLE IF NOT EXISTS statistics (time INTEGER UNIQUE, risk_unknown_count INTEGER, risk_safe_count INTEGER, risk_normal_count INTEGER, risk_suspicious_count INTEGER, risk_malicious_count INTEGER, credibility_low_count INTEGER, credibility_medium_count INTEGER, credibility_high_count INTEGER)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON statistics (time)")
 }

@@ -35,7 +35,7 @@ func create(m map[string]any) TIC {
 }
 
 // check netstats via all TICs
-func checkAll() []*util.Result {
+func CheckAll() []*util.Result {
 	var netstats []*util.Netstat
 	var results []*util.Result
 	for len(util.Netstats) > 0 {
@@ -57,10 +57,21 @@ func checkAll() []*util.Result {
 			netstats = filtered
 		}
 	}
+
+	for _, ns := range netstats {
+		results = append(results, &util.Result{
+			Time:    time.Now().Unix(),
+			IP:      ns.DstIP,
+			Netstat: ns,
+			Threat:  nil,
+		})
+	}
+
 	return results
 }
 
 func init() {
+	log.Println("[TIC] check period:", viper.GetDuration("check_period"))
 	config := viper.Get("tic").([]any)
 	for _, v := range config {
 		m, ok := v.(map[string]any)
@@ -72,14 +83,5 @@ func init() {
 			log.Printf("[TIC] %s created\n", m["type"])
 			tics = append(tics, tic)
 		}
-	}
-
-	if viper.GetDuration("check_period") > 0 {
-		go func() {
-			for {
-				time.Sleep(viper.GetDuration("check_period"))
-				util.Action(checkAll())
-			}
-		}()
 	}
 }

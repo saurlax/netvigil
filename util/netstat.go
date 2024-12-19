@@ -7,6 +7,7 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
+	"github.com/spf13/viper"
 )
 
 type Netstat struct {
@@ -101,25 +102,29 @@ func init() {
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_dst_ip ON netstats (dst_ip)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_dst_port ON netstats (dst_port)")
 
-	devices, err := pcap.FindAllDevs()
-	if err != nil {
-		log.Fatal(err)
-	}
+	if viper.GetBool("capture") {
+		devices, err := pcap.FindAllDevs()
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	for _, dev := range devices {
-		for _, addr := range dev.Addresses {
-			if !addr.IP.IsLoopback() && !addr.IP.IsUnspecified() {
-				handle, err := pcap.OpenLive(dev.Name, 1600, true, -1)
-				if err != nil {
-					log.Fatalf("Error opening device %s: %v\n", dev.Name, err)
-				} else {
-					log.Printf("Capturing on device: %s\n", dev.Name)
+		for _, dev := range devices {
+			for _, addr := range dev.Addresses {
+				if !addr.IP.IsLoopback() && !addr.IP.IsUnspecified() {
+					handle, err := pcap.OpenLive(dev.Name, 1600, true, -1)
+					if err != nil {
+						log.Fatalf("Error opening device %s: %v\n", dev.Name, err)
+					} else {
+						log.Printf("Capturing on device: %s\n", dev.Name)
+					}
+					packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
+					go capture(packetSource)
+					break
 				}
-				packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
-				go capture(packetSource)
-				break
 			}
 		}
+	} else {
+		log.Println("Network traffic capture is disabled")
 	}
 }
 

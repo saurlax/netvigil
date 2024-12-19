@@ -13,8 +13,8 @@ Network Traffic Monitoring and Analysis based Local Threat Intelligence Center
 In order to run the program correctly, you need to create a `config.toml` file in the root directory, which should look like this:
 
 ```toml
-# The interval of checking for threats
-check_interval = '10s'
+# The period of checking for threats
+check_period = '10s'
 
 # The url of the web interface
 # leave it empty if you don't want to use the web interface

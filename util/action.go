@@ -62,6 +62,10 @@ func Action(results []*Result) {
 	}
 
 	for _, r := range results {
+		if r.Threat == nil {
+			stats.RiskUnknownCount++
+			continue
+		}
 		switch r.Threat.Risk {
 		case Unknown:
 			stats.RiskUnknownCount++
