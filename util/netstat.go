@@ -7,7 +7,6 @@ import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
-	"github.com/spf13/viper"
 )
 
 type Netstat struct {
@@ -19,17 +18,19 @@ type Netstat struct {
 	DstPort    uint16 `json:"dstPort"`
 	Executable string `json:"executable"`
 	Location   string `json:"location"`
+	Packet     gopacket.Packet
 }
 
 var (
-	Packets chan gopacket.Packet
+	Netstats chan Netstat = make(chan Netstat, 1024)
 )
 
 // Capture network traffic information
 func capture(ps *gopacket.PacketSource) {
 	for packet := range ps.Packets() {
 		n := Netstat{
-			Time: packet.Metadata().Timestamp.Unix(),
+			Time:   packet.Metadata().Timestamp.Unix(),
+			Packet: packet,
 		}
 
 		ipv4Layer := packet.Layer(layers.LayerTypeIPv4)
@@ -88,12 +89,11 @@ func capture(ps *gopacket.PacketSource) {
 		}
 
 		n.Save()
-		Packets <- packet
+		Netstats <- n
 	}
 }
 
 func init() {
-	Packets = make(chan gopacket.Packet, viper.GetInt("buffer_size"))
 	DB.Exec("CREATE TABLE IF NOT EXISTS netstats (time INTEGER, src_ip TEXT, src_port INTEGER, dst_ip TEXT, dst_port INTEGER, executable TEXT, location TEXT)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON netstats (time)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_src_ip ON netstats (src_ip)")

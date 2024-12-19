@@ -5,11 +5,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
-	"github.com/saurlax/netvigil/tic"
 	"github.com/saurlax/netvigil/util"
-	"github.com/spf13/viper"
 )
 
 func main() {
@@ -18,16 +15,4 @@ func main() {
 	<-sig
 	log.Println("Shutting down...")
 	util.DB.Close()
-}
-
-func init() {
-	if viper.GetDuration("check_interval") > 0 {
-		go func() {
-			util.StartStatisticsJob()
-			for {
-				tic.Check()
-				time.Sleep(viper.GetDuration("check_interval"))
-			}
-		}()
-	}
 }

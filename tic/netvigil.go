@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 
@@ -20,32 +21,55 @@ type NetvigilRequest struct {
 	IPs   []string `json:"ips"`
 }
 
-type NetvigilResponse []*util.Threat
+func (t *Netvigil) Check(netstats []util.Netstat) []util.Result {
+	var results []util.Result
+	var threats []util.Threat
+	var ips []string
 
-func (t *Netvigil) Check(ips []string) []*util.Threat {
-	var threats []*util.Threat
+	for _, netstat := range netstats {
+		ips = append(ips, netstat.DstIP)
+	}
+
 	requestBody, err := json.Marshal(NetvigilRequest{
 		Token: t.Token,
 		IPs:   ips,
 	})
 	if err != nil {
 		log.Println("[Netvigil] Failed to marshal request:", err)
-		return threats
+		return results
 	}
 
 	resp, err := http.Post(fmt.Sprintf("%s/api/check", t.Server), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		log.Println("[Netvigil] Failed to request:", err)
-		return threats
+		return results
 	}
 	defer resp.Body.Close()
 
-	var res NetvigilResponse
-	err = json.NewDecoder(resp.Body).Decode(&res)
-	if err != nil {
-		log.Println("[Netvigil] Failed to decode response:", err)
-		return threats
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		log.Println("[Netvigil] Failed to request:", string(bodyBytes))
+		return results
 	}
 
-	return res
+	err = json.NewDecoder(resp.Body).Decode(&threats)
+	if err != nil {
+		log.Println("[Netvigil] Failed to decode response:", err)
+		return results
+	}
+
+	for _, netstat := range netstats {
+		for _, threat := range threats {
+			if netstat.DstIP == threat.IP {
+				results = append(results, util.Result{
+					Time:    netstat.Time,
+					IP:      netstat.DstIP,
+					Netstat: &netstat,
+					Threat:  &threat,
+				})
+			}
+		}
+	}
+
+	return results
 }

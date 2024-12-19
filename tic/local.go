@@ -1,44 +1,39 @@
 package tic
 
 import (
-	"net"
-	"time"
+	"log"
 
 	"github.com/saurlax/netvigil/util"
 )
 
-type Local struct {
-	Blacklist []net.IP
-	WhiteList []net.IP
-}
+type Local struct{}
 
-func (t *Local) Check(ips []string) []*util.Threat {
-	threats := make([]*util.Threat, 0)
-	for _, ip := range ips {
-		for _, black := range t.Blacklist {
-			if black.Equal(net.ParseIP(ip)) {
-				threats = append(threats, &util.Threat{
-					Time:        time.Now().UnixMilli(),
-					IP:          ip,
-					TIC:         "Local",
-					Reason:      "Blacklisted",
-					Risk:        util.Malicious,
-					Credibility: util.High,
-				})
-			}
-		}
-		for _, white := range t.WhiteList {
-			if white.Equal(net.ParseIP(ip)) {
-				threats = append(threats, &util.Threat{
-					Time:        time.Now().UnixMilli(),
-					IP:          ip,
-					TIC:         "Local",
-					Reason:      "Whitelisted",
-					Risk:        util.Safe,
-					Credibility: util.High,
+func (t *Local) Check(netstats []*util.Netstat) []util.Result {
+	var results []util.Result
+	var ips []string
+
+	for _, n := range netstats {
+		ips = append(ips, n.DstIP)
+	}
+
+	threats, err := util.GetThreatsByIPs(ips)
+	if err != nil {
+		log.Println("Error getting threats:", err)
+		return results
+	}
+
+	for _, n := range netstats {
+		for _, t := range threats {
+			if n.DstIP == t.IP {
+				results = append(results, util.Result{
+					Time:    n.Time,
+					IP:      n.DstIP,
+					Netstat: n,
+					Threat:  t,
 				})
 			}
 		}
 	}
-	return threats
+
+	return results
 }

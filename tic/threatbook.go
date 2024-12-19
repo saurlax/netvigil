@@ -26,11 +26,13 @@ type ThreatbookResponse struct {
 	} `json:"data"`
 }
 
-func (t *Threatbook) Check(ips []string) []*util.Threat {
-	var threats []*util.Threat
+func (t *Threatbook) Check(netstats []*util.Netstat) []util.Result {
+	var results []util.Result
+	var threats []util.Threat
 	var resource []string
 
-	for _, ip := range ips {
+	for _, n := range netstats {
+		ip := n.DstIP
 		if !net.ParseIP(ip).IsPrivate() {
 			resource = append(resource, ip)
 		}
@@ -42,7 +44,7 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 	})
 	if err != nil {
 		log.Println("[Threatbook] Failed to request:", err)
-		return threats
+		return results
 	}
 	defer resp.Body.Close()
 
@@ -50,7 +52,7 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		log.Println("[Threatbook] Failed to decode response:", err)
-		return threats
+		return results
 	}
 	if res.ResponseCode != 0 {
 		log.Printf("[Threatbook] Abnormal response (%v): %v\n", res.ResponseCode, res.VerBoseMsg)
@@ -80,7 +82,7 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 			credibility = util.Low
 		}
 
-		threats = append(threats, &util.Threat{
+		threats = append(threats, util.Threat{
 			Time:        time.Now().UnixMilli(),
 			IP:          ip,
 			TIC:         "Threatbook",
@@ -90,5 +92,18 @@ func (t *Threatbook) Check(ips []string) []*util.Threat {
 		})
 	}
 
-	return threats
+	for _, n := range netstats {
+		for _, t := range threats {
+			if n.DstIP == t.IP {
+				results = append(results, util.Result{
+					Time:    t.Time,
+					IP:      t.IP,
+					Netstat: n,
+					Threat:  &t,
+				})
+			}
+		}
+	}
+
+	return results
 }

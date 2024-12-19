@@ -47,11 +47,11 @@ func maliciousAction(n Netstat) {
 	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }
 
-func (t Threat) Action(n Netstat) {
-	switch t.Risk {
+func (r *Result) Action() {
+	switch r.Threat.Risk {
 	case Suspicious:
-		suspiciousAction(n)
+		suspiciousAction(*r.Netstat)
 	case Malicious:
-		maliciousAction(n)
+		maliciousAction(*r.Netstat)
 	}
 }
