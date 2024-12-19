@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/gen2brain/beeep"
 )
@@ -47,11 +48,44 @@ func maliciousAction(n Netstat) {
 	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }
 
-func (r *Result) Action() {
-	switch r.Threat.Risk {
-	case Suspicious:
-		suspiciousAction(*r.Netstat)
-	case Malicious:
-		maliciousAction(*r.Netstat)
+func Action(results []*Result) {
+	stats := Statistics{
+		Time:                   time.Now(),
+		RiskUnknownCount:       0,
+		RiskSafeCount:          0,
+		RiskNormalCount:        0,
+		RiskSuspiciousCount:    0,
+		RiskMaliciousCount:     0,
+		CredibilityLowCount:    0,
+		CredibilityMediumCount: 0,
+		CredibilityHighCount:   0,
 	}
+
+	for _, r := range results {
+		switch r.Threat.Risk {
+		case Unknown:
+			stats.RiskUnknownCount++
+		case Safe:
+			stats.RiskSafeCount++
+		case Normal:
+			stats.RiskNormalCount++
+		case Suspicious:
+			stats.RiskSuspiciousCount++
+			suspiciousAction(*r.Netstat)
+		case Malicious:
+			stats.RiskMaliciousCount++
+			maliciousAction(*r.Netstat)
+
+		}
+		switch r.Threat.Credibility {
+		case Low:
+			stats.CredibilityLowCount++
+		case Medium:
+			stats.CredibilityMediumCount++
+		case High:
+			stats.CredibilityHighCount++
+		}
+	}
+
+	stats.Update()
 }
