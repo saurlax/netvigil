@@ -37,18 +37,23 @@ func create(m map[string]any) TIC {
 // check netstats via all TICs
 func checkAll() {
 	netstats := make([]*util.Netstat, 0)
-Loop:
-	for {
-		select {
-		case nstat := <-util.Netstats:
-			netstats = append(netstats, &nstat)
-		default:
-			break Loop
-		}
+	for len(util.Netstats) > 0 {
+		ns := <-util.Netstats
+		netstats = append(netstats, &ns)
 	}
+
 	for _, tic := range tics {
 		for _, res := range tic.Check(netstats) {
 			res.Save()
+			res.Action()
+			// remove the netstat that has been checked
+			filtered := make([]*util.Netstat, 0)
+			for _, ns := range netstats {
+				if ns.DstIP != res.IP {
+					filtered = append(filtered, ns)
+				}
+			}
+			netstats = filtered
 		}
 	}
 }
