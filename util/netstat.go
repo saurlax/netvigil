@@ -1,8 +1,15 @@
 package util
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"net"
+	"os"
+	"os/exec"
+	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -68,6 +75,15 @@ func capture(ps *gopacket.PacketSource) {
 			}
 		}
 
+		// 获取发起程序信息
+		if runtime.GOOS == "windows" {
+			n.Executable = findExecutableWindows(n.SrcPort)
+		} else if runtime.GOOS == "linux" {
+			n.Executable = findExecutableLinux(n.SrcPort)
+		} else {
+			n.Executable = "The OS has not been supported yet!"
+		}
+
 		// Get the location of the IP address
 		ipAddr := net.ParseIP(n.DstIP)
 		record, _ := GeoLiteCity.Lookup(ipAddr)
@@ -92,6 +108,119 @@ func capture(ps *gopacket.PacketSource) {
 		n.Save()
 		Netstats <- n
 	}
+}
+
+func findExecutableWindows(port uint16) string {
+	// 执行 netstat 命令
+	output, err := exec.Command("cmd", "/C", "netstat -ano").Output()
+	if err != nil {
+		return "Error to execute command:" + err.Error()
+	}
+
+	// 解析 netstat 输出
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		fields := strings.Fields(line)
+		if len(fields) >= 5 && strings.Contains(fields[1], fmt.Sprintf(":%d", port)) {
+			// 获取 PID
+			pid := fields[len(fields)-1]
+			// 获取进程名称
+			cmd := exec.Command("tasklist", "/FI", fmt.Sprintf("PID eq %s", pid))
+			procOutput, err := cmd.Output()
+			if err != nil {
+				return ""
+			}
+
+			procLines := strings.Split(string(procOutput), "\n")
+			if len(procLines) > 3 {
+				return strings.Fields(procLines[3])[0] // 返回程序名称
+			}
+		}
+	}
+	return ""
+}
+
+func findExecutableLinux(port uint16) string {
+	// 打开 /proc/net/tcp 文件
+	file, err := os.Open("/proc/net/tcp")
+	if err != nil {
+		return "Error to execute command:" + err.Error()
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Scan() // 跳过第一行（表头）
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		fields := strings.Fields(line)
+		if len(fields) < 10 {
+			continue
+		}
+
+		// 解析本地地址和端口
+		localAddr := fields[1]
+		parts := strings.Split(localAddr, ":")
+		if len(parts) != 2 {
+			continue
+		}
+
+		localPort, err := strconv.ParseUint(parts[1], 16, 16)
+		if err != nil {
+			continue
+		}
+
+		// 如果找到匹配的端口
+		if uint16(localPort) == port {
+			inode := fields[9]
+			return getLinuxExecutableByInode(inode)
+		}
+	}
+	return ""
+}
+
+func getLinuxExecutableByInode(inode string) string {
+	// 遍历 /proc 目录
+	procDir, err := os.Open("/proc")
+	if err != nil {
+		return "Error to Open proc:" + err.Error()
+	}
+	defer procDir.Close()
+
+	pids, err := procDir.Readdirnames(-1)
+	if err != nil {
+		return "Error to Readdirnames:" + err.Error()
+	}
+
+	for _, pid := range pids {
+		if _, err := strconv.Atoi(pid); err != nil {
+			continue
+		}
+
+		fdDir := fmt.Sprintf("/proc/%s/fd", pid)
+		fdFiles, err := os.ReadDir(fdDir)
+		if err != nil {
+			continue
+		}
+
+		for _, fd := range fdFiles {
+			link, err := os.Readlink(fmt.Sprintf("%s/%s", fdDir, fd.Name()))
+			if err != nil || !strings.Contains(link, inode) {
+				continue
+			}
+
+			// 获取程序名称
+			cmdPath := fmt.Sprintf("/proc/%s/comm", pid)
+			cmd, err := os.ReadFile(cmdPath)
+			if err != nil {
+				return ""
+			}
+
+			return strings.TrimSpace(string(cmd))
+		}
+	}
+
+	return ""
 }
 
 func init() {
