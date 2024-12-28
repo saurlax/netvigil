@@ -24,6 +24,17 @@ web = '127.0.0.1:8080'
 username = 'username'
 password = 'password'
 
+# Option to capture traffic, default is false
+capture = true
+
+# Record threat status over a period of time, in seconds
+# Default is 60.0s
+stat_period = 60.0
+
+# Number of data items displayed on the front-end page
+# Default is 200
+page_size = 200.0
+
 [[tic]]
 type = 'local'
 
@@ -138,3 +149,8 @@ type Threat struct {
 - `cgo: C compiler "gcc" not found: exec: "gcc": executable file not found in %PATH%`
 
   Install `gcc` to fix it
+  
+- `# github.com/google/gopacket/pcap`
+  `../go/pkg/mod/github.com/google/gopacket@v1.1.19/pcap/pcap_unix.go:34:10: fatal error: pcap.h: No such file or directory`
+
+  Run `apt-get install libpcap-dev` to solve it.
