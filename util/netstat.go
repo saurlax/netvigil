@@ -37,7 +37,7 @@ var (
 func capture(ps *gopacket.PacketSource) {
 	for packet := range ps.Packets() {
 		n := Netstat{
-			Time:   packet.Metadata().Timestamp.Unix(),
+			Time:   packet.Metadata().Timestamp.UnixMilli(),
 			Packet: packet,
 		}
 
