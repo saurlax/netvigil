@@ -44,7 +44,7 @@ const columns = [{
 const data = computed(() => netstats.value.map(n => {
   return {
     ...n,
-    time: n.time ? dayjs(n.time * 1000).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
+    time: n.time ? dayjs(n.time).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
     src: n.srcIP && n.srcPort ? `${n.srcIP}:${n.srcPort}` : '未知地址',
     dst: n.dstIP && n.dstPort ? `${n.dstIP}:${n.dstPort}` : '未知地址',
     location: n.location || '未知位置',
