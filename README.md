@@ -27,10 +27,6 @@ password = 'password'
 # Option to capture traffic, default is false
 capture = true
 
-# Record threat status over a period of time, in seconds
-# Default is 60.0s
-stat_period = 60.0
-
 # Number of data items displayed on the front-end page
 # Default is 200
 page_size = 200.0
