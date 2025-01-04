@@ -86,7 +86,20 @@ func threatsHandler(c *gin.Context) {
 	c.JSON(200, records)
 }
 func readConfigHandler(c *gin.Context) {
-	c.JSON(200, viper.AllSettings())
+	settings := viper.AllSettings()
+
+	if checkPeriod, ok := settings["check_period"].(string); ok {
+		if strings.HasSuffix(checkPeriod, "s") {
+			checkPeriodWithoutUnit := strings.TrimSuffix(checkPeriod, "s")
+			if value, err := strconv.Atoi(checkPeriodWithoutUnit); err == nil {
+				settings["check_period"] = value
+			} else {
+				fmt.Println("无法转换 check_period 为整数", err)
+			}
+		}
+	}
+
+	c.JSON(200, settings)
 }
 
 func threatsOperationHandler(c *gin.Context) {
