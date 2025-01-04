@@ -1,59 +1,63 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElInputNumber, ElSwitch, ElSkeleton, ElSpace, ElMessageBox } from 'element-plus'
-import { user } from '../utils'
-import { useRouter } from 'vue-router';
+  import { ref, onMounted } from 'vue'
+  import axios from 'axios'
+  import { ElForm, ElFormItem, ElInput, ElButton, ElMessage, ElInputNumber, ElSwitch, ElSkeleton, ElSpace, ElMessageBox } from 'element-plus'
+  import { user } from '../utils'
+  import { useRouter } from 'vue-router';
 
 
-const router = useRouter()
-const config = ref()
+  const router = useRouter()
+  const config = ref()
 
-onMounted(() => {
-  if (user.value) {
-    axios.get('/api/config', {
-      headers: {
-        Authorization: `Bearer ${user.value.token}`
-      }
-    }).then(res => {
-      config.value = res.data
-    }).catch(e => {
-      if (e.response.status === 401) {
-        router.push('/login')
-      } else {
-        ElMessage.error(e.response.data.error ?? e.message)
-      }
+  onMounted(() => {
+    if (user.value) {
+      axios.get('/api/config', {
+        headers: {
+          Authorization: `Bearer ${user.value.token}`
+        }
+      }).then(res => {
+        config.value = res.data
+      }).catch(e => {
+        if (e.response.status === 401) {
+          router.push('/login')
+        } else {
+          ElMessage.error(e.response.data.error ?? e.message)
+        }
+      })
+    }
+  })
+
+  const update = () => {
+    const checkPeriod = `${config.value.check_period}s`;
+    const updatedConfig = { ...config.value, check_period: checkPeriod };
+    ElMessageBox.confirm('确定要更新配置文件吗？').then(() => {
+      axios.post('/api/config', updatedConfig, {
+        headers: {
+          Authorization: `Bearer ${user.value?.token}`
+        }
+      }).then(() => {
+        ElMessage.success('更新成功，相关配置将会在重新登录后生效')
+      }).catch(e => {
+        if (e.response.status === 401) {
+          router.push('/login')
+        } else {
+          ElMessage.error(e.response.data.error ?? e.message)
+        }
+      })
     })
   }
-})
-
-const update = () => {
-  ElMessageBox.confirm('确定要更新配置文件吗？').then(() => {
-    axios.post('/api/config', config.value, {
-      headers: {
-        Authorization: `Bearer ${user.value?.token}`
-      }
-    }).then(() => {
-      ElMessage.success('更新成功')
-    }).catch(e => {
-      if (e.response.status === 401) {
-        router.push('/login')
-      } else {
-        ElMessage.error(e.response.data.error ?? e.message)
-      }
-    })
-  })
-}
 </script>
 
 <template>
   <ElForm label-position="left" label-width="auto">
     <div v-if="config">
-      <ElFormItem label="抓包间隔">
-        <ElInput v-model="config.capture_interval" />
-      </ElFormItem>
       <ElFormItem label="检测间隔">
-        <ElInput v-model="config.check_interval" />
+        <ElInputNumber v-model="config.check_period" />
+        <span>秒</span>
+      </ElFormItem>
+      <ElFormItem label="记录数据数">
+        <ElInputNumber v-model="config.page_size" />
+        <span>条</span>
       </ElFormItem>
       <ElFormItem label="管理地址">
         <ElInput v-model="config.web" />
@@ -85,7 +89,7 @@ const update = () => {
 </template>
 
 <style scoped>
-.tics {
-  flex-grow: 1;
-}
+  .tics {
+    flex-grow: 1;
+  }
 </style>
