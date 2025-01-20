@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 	"time"
@@ -102,6 +103,41 @@ func readConfigHandler(c *gin.Context) {
 	c.JSON(200, settings)
 }
 
+// 删除防火墙规则（自动适配 Windows / Linux）
+func DelFireWall(ip string) {
+	if getOS() == "windows" {
+		in := exec.Command("netsh", "advfirewall", "firewall", "delete", "rule", "name=netvigil_block_in_"+ip)
+		out := exec.Command("netsh", "advfirewall", "firewall", "delete", "rule", "name=netvigil_block_out_"+ip)
+
+		if err := in.Run(); err != nil {
+			log.Printf("Failed to delete inbound firewall rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Inbound firewall rule deleted for %s\n", ip)
+		}
+
+		if err := out.Run(); err != nil {
+			log.Printf("Failed to delete outbound firewall rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Outbound firewall rule deleted for %s\n", ip)
+		}
+	} else { // Linux
+		in := exec.Command("iptables", "-D", "INPUT", "-s", ip, "-j", "DROP")
+		out := exec.Command("iptables", "-D", "OUTPUT", "-d", ip, "-j", "DROP")
+
+		if err := in.Run(); err != nil {
+			log.Printf("Failed to delete inbound iptables rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Inbound iptables rule deleted for %s\n", ip)
+		}
+
+		if err := out.Run(); err != nil {
+			log.Printf("Failed to delete outbound iptables rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Outbound iptables rule deleted for %s\n", ip)
+		}
+	}
+}
+
 func threatsOperationHandler(c *gin.Context) {
 	var req struct {
 		ID     int    `json:"id"`
@@ -114,12 +150,22 @@ func threatsOperationHandler(c *gin.Context) {
 	}
 
 	if req.Action == "remove" {
+		var ip string
+		err := DB.QueryRow("SELECT ip FROM threats WHERE ROWID = ?", req.ID).Scan(&ip)
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to find threat record"})
+			fmt.Println("500 SELECT:", err)
+			return
+		}
+
+		DelFireWall(ip)
+
 		result, err := DB.Exec("DELETE FROM threats WHERE ROWID = ?", req.ID)
 		if err != nil {
 			c.JSON(500, gin.H{"error": err.Error()})
 			return
 		}
-		c.JSON(200, result)
+		c.JSON(200, gin.H{"success": true, "message": fmt.Sprintf("Threat with IP %s removed", ip), "result": result})
 	} else {
 		c.JSON(400, gin.H{"error": err.Error()})
 	}
@@ -195,6 +241,7 @@ func init() {
 	r.GET("/api/config", authHandler, readConfigHandler)
 	r.POST("/api/config", authHandler, writeConfigHandler)
 	r.POST("/api/check", checkHandler)
+
 	r.NoRoute(staticHandler)
 
 	log.Printf("Web server started on http://%s/\n", addr)
