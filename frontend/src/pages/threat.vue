@@ -1,10 +1,41 @@
 <script setup lang="tsx">
-import { ElAutoResizer, ElButton, ElTableV2 } from 'element-plus'
+import { ElAutoResizer, ElButton, ElTableV2, ElMessageBox } from 'element-plus'
 import { credibilityLevel, riskLevel, threats } from '../utils'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
+import { user } from '../utils'
 import dayjs from 'dayjs'
 
-// const threats = ref([])
+const DelFireWall = async (id: number, ip: string) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要解除对 ${ip} 的封锁吗？`,
+      '删除威胁ip',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    )
+
+    const res = await fetch("/api/threats", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.value?.token}` },
+      body: JSON.stringify({ id: Number(id), action: "remove" })
+    })
+
+    const result = await res.json()
+    if (res.status === 400) {
+      ElMessageBox.error(`请求参数错误: ${result.error}`)
+      return
+    }
+
+    if (result.success) {
+      threats.value = threats.value.filter(n => n.id !== id)
+      ElMessageBox.success(`成功删除 ${ip}`)
+    } else {
+      ElMessageBox.error(`删除失败: ${result.error}`)
+    }
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 const columns = [{
   key: 'id',
   title: 'ID',
@@ -43,7 +74,8 @@ const columns = [{
 }, {
   key: 'action',
   width: 100,
-  cellRenderer: () => (<ElButton type="danger" size="small">删除</ElButton>)
+  title: '操作',
+  cellRenderer: ({ rowData }) => (<ElButton type="danger" size="small" onClick={() => DelFireWall(rowData.id, rowData.ip)}>删除</ElButton>)
 }]
 
 const data = computed(() => {
