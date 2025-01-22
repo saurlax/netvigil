@@ -61,6 +61,8 @@ export const user = ref<User>();
 export const netstats = ref<Netstat[]>([]);
 export const threats = ref<Threat[]>([]);
 export const statistcs = ref<Statistics[]>([]);
+export const total = ref(0)
+export const page = ref(1)
 
 export const threatsMap = computed(() => {
   const result: { [ip: string]: Threat } = {};
@@ -91,7 +93,6 @@ export const stats = computed(() => {
     const day = Math.floor((n.time - now + 8 * aday) / aday);
     if (day < 1) continue;
     const risk = threatsMap.value[n.dstIP]?.risk ?? RiskLevel.Unknown;
-    console.log("risk:", risk, "day:", day, "ip:", n.dstIP);
     result[day][risk + 1]++;
     result[8][risk + 1]++;
   }
