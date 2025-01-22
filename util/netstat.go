@@ -262,11 +262,23 @@ func (n *Netstat) Save() error {
 	return err
 }
 
-func GetNetstats(limit int, page int) ([]*Netstat, error) {
+func GetNetstats(limit int, page int) ([]*Netstat, int, error) {
+	var total int
+	err := DB.QueryRow("SELECT COUNT(*) FROM netstats").Scan(&total)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	if page < 1 {
+		page = 1
+	}
+
 	offset := limit * (page - 1)
 	rows, err := DB.Query("SELECT ROWID, time, src_ip, src_port, dst_ip, dst_port, executable, location FROM netstats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
+	log.Printf("Offset: %d, Limit: %d, Page:%d\n", offset, limit, page)
 	if err != nil {
-		return nil, err
+		log.Printf("SELECT ROWID, time, src_ip, src_port, dst_ip, dst_port, executable, location FROM netstats ORDER BY time DESC LIMIT ? OFFSET ? Failed!Error:", limit, offset, err)
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -275,9 +287,9 @@ func GetNetstats(limit int, page int) ([]*Netstat, error) {
 		var n Netstat
 		err := rows.Scan(&n.ID, &n.Time, &n.SrcIP, &n.SrcPort, &n.DstIP, &n.DstPort, &n.Executable, &n.Location)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		netstats = append(netstats, &n)
 	}
-	return netstats, nil
+	return netstats, total, nil
 }

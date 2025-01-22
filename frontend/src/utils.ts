@@ -27,6 +27,19 @@ export interface Threat {
   credibility: CredibilityLevel;
 }
 
+// 目前没用
+export interface Statistics {
+  time: number;
+  risk_unknown_count: number;
+  risk_safe_count: number;
+  risk_normal_count: number;
+  risk_suspicious_count: number;
+  risk_malicious_count: number;
+  credibility_low_count: number;
+  credibility_medium_count: number;
+  credibility_high_count: number;
+}
+
 export enum RiskLevel {
   Unknown,
   Safe,
@@ -47,6 +60,7 @@ export const credibilityLevel = ["低", "中", "高"];
 export const user = ref<User>();
 export const netstats = ref<Netstat[]>([]);
 export const threats = ref<Threat[]>([]);
+export const statistcs = ref<Statistics[]>([]);
 
 export const threatsMap = computed(() => {
   const result: { [ip: string]: Threat } = {};
@@ -77,6 +91,7 @@ export const stats = computed(() => {
     const day = Math.floor((n.time - now + 8 * aday) / aday);
     if (day < 1) continue;
     const risk = threatsMap.value[n.dstIP]?.risk ?? RiskLevel.Unknown;
+    console.log("risk:", risk, "day:", day, "ip:", n.dstIP);
     result[day][risk + 1]++;
     result[8][risk + 1]++;
   }

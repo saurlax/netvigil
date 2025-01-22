@@ -84,7 +84,7 @@ const navigate = (name: string) => {
 
 .el-aside {
   --el-aside-width: 180px;
-  --el-menu-bg-color: trasnparent;
+  --el-menu-bg-color: transnparent;
   background-image: linear-gradient(to bottom right, #e2eefb, #b9cfe5);
 }
 
