@@ -67,12 +67,19 @@ func loginHandler(c *gin.Context) {
 }
 
 func netstatsHandler(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Param("page"))
-	netstats, err := GetNetstats(viper.GetInt("page_size"), page)
+	page, err := strconv.Atoi(c.Param("page"))
+	if err != nil {
+		log.Printf("Error to get page:", err)
+	}
+	log.Printf("netstatHandler page: %d", page)
+	netstats, total, err := GetNetstats(viper.GetInt("page_size"), page)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
-	c.JSON(200, netstats)
+	c.JSON(200, gin.H{
+		"netstats": netstats,
+		"total":    total,
+	})
 
 }
 
@@ -235,7 +242,7 @@ func init() {
 	r := gin.Default()
 
 	r.POST("/api/login", loginHandler)
-	r.GET("/api/netstats", authHandler, netstatsHandler)
+	r.GET("/api/netstats", netstatsHandler)
 	r.GET("/api/threats", authHandler, threatsHandler)
 	r.POST("/api/threats", authHandler, threatsOperationHandler)
 	r.GET("/api/config", authHandler, readConfigHandler)
