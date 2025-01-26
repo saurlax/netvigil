@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { onMounted, watch } from 'vue'
+import { onMounted, watch, ref } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessage, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { user, netstats, threats } from './utils'
+import { user, netstats, threats, total } from './utils'
 
 const route = useRoute()
 const router = useRouter()
+
+const page = ref(Number(route.query.page) || 1)
 
 onMounted(() => {
   const userStorage = localStorage.getItem('user')
@@ -16,15 +18,18 @@ onMounted(() => {
     router.push('/login')
   }
 })
-
+// TODO：解决前端参数向后端上传时遇到的解析问题 
 watch(user, () => {
   if (user.value) {
     axios.get('/api/netstats', {
+      params: { page: page.value },
       headers: {
         Authorization: `Bearer ${user.value.token}`
       }
     }).then(res => {
-      netstats.value = res.data
+      netstats.value = res.data.netstats
+      total.value = res.data.total
+
     }).catch(e => {
       if (e.response.status === 401) {
         router.push('/login')
@@ -32,6 +37,28 @@ watch(user, () => {
         ElMessage.error(e.response.data.error ?? e.message)
       }
     })
+
+    watch(
+      () => route.query.page,
+      (newPage) => {
+        page.value = Number(newPage) || 1
+        axios.get('/api/netstats',{
+          params: { page: page.value },
+          headers: { Authorization: `Bearer ${user.value?.token}` }
+        })
+        .then(res => {
+          netstats.value = res.data.netstats
+          total.value = res.data.total
+        })
+        .catch(e => {
+          if (e.response.status === 401) {
+            router.push('/login')
+          } else {
+            ElMessage.error(e.response.data.error ?? e.message)
+          }
+        })
+      }
+    )
 
     axios.get('/api/threats', {
       headers: {
@@ -84,7 +111,7 @@ const navigate = (name: string) => {
 
 .el-aside {
   --el-aside-width: 180px;
-  --el-menu-bg-color: trasnparent;
+  --el-menu-bg-color: transnparent;
   background-image: linear-gradient(to bottom right, #e2eefb, #b9cfe5);
 }
 

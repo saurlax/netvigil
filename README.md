@@ -27,10 +27,6 @@ password = 'password'
 # Option to capture traffic, default is false
 capture = true
 
-# Number of data items displayed on the front-end page
-# Default is 200
-page_size = 200.0
-
 [[tic]]
 type = 'local'
 
@@ -145,7 +141,7 @@ type Threat struct {
 - `cgo: C compiler "gcc" not found: exec: "gcc": executable file not found in %PATH%`
 
   Install `gcc` to fix it
-  
+
 - `# github.com/google/gopacket/pcap`
   `../go/pkg/mod/github.com/google/gopacket@v1.1.19/pcap/pcap_unix.go:34:10: fatal error: pcap.h: No such file or directory`
 

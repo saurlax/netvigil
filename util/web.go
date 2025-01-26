@@ -67,13 +67,31 @@ func loginHandler(c *gin.Context) {
 }
 
 func netstatsHandler(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Param("page"))
-	netstats, err := GetNetstats(viper.GetInt("page_size"), page)
+	page, err := strconv.Atoi(c.DefaultQuery("page", "0"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid page number"})
+		return
+	}
+	limit, err := strconv.Atoi(c.DefaultQuery("limit", "100"))
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid limit number"})
+		return
+	}
+	// Limit the number of records to prevent abuse
+	if limit > 500 {
+		c.JSON(400, gin.H{"error": "Limit number too large"})
+		return
+	}
+	netstats, total, err := GetNetstats(limit, page)
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 	}
-	c.JSON(200, netstats)
-
+	c.JSON(200, gin.H{
+		"netstats": netstats,
+		"total":    total,
+		"page":     page,
+		"limit":    limit,
+	})
 }
 
 func threatsHandler(c *gin.Context) {
@@ -235,7 +253,7 @@ func init() {
 	r := gin.Default()
 
 	r.POST("/api/login", loginHandler)
-	r.GET("/api/netstats", authHandler, netstatsHandler)
+	r.GET("/api/netstats", netstatsHandler)
 	r.GET("/api/threats", authHandler, threatsHandler)
 	r.POST("/api/threats", authHandler, threatsOperationHandler)
 	r.GET("/api/config", authHandler, readConfigHandler)
