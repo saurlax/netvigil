@@ -1,9 +1,31 @@
 <script setup lang="tsx">
-import { ElAutoResizer, ElButton, ElTableV2, ElMessageBox } from 'element-plus'
-import { credibilityLevel, riskLevel, threats } from '../utils'
-import { computed } from 'vue'
+import { ElAutoResizer, ElButton, ElTableV2, ElMessageBox, ElMessage } from 'element-plus'
+import { Threat } from '../utils'
+import { computed, onMounted, ref } from 'vue'
 import { user } from '../utils'
 import dayjs from 'dayjs'
+import axios from 'axios'
+import { useRouter } from 'vue-router'
+
+const riskLevel = ["未知", "安全", "正常", "可疑", "恶意"];
+const credibilityLevel = ["低", "中", "高"];
+
+const threats = ref<Threat[]>([])
+const router = useRouter()
+
+onMounted(() => {
+  axios.get('/api/threats', {
+    headers: { Authorization: `Bearer ${user.value?.token}` }
+  }).then(res => {
+    threats.value = res.data
+  }).catch(e => {
+    if (e.response.status === 401) {
+      router.push('/login')
+    } else {
+      ElMessage.error(e.response.data.error ?? e.message)
+    }
+  })
+})
 
 const DelFireWall = async (id: number, ip: string) => {
   try {
@@ -21,15 +43,15 @@ const DelFireWall = async (id: number, ip: string) => {
 
     const result = await res.json()
     if (res.status === 400) {
-      ElMessageBox.error(`请求参数错误: ${result.error}`)
+      ElMessage.error(`请求参数错误: ${result.error}`)
       return
     }
 
     if (result.success) {
       threats.value = threats.value.filter(n => n.id !== id)
-      ElMessageBox.success(`成功删除 ${ip}`)
+      ElMessage.success(`成功删除 ${ip}`)
     } else {
-      ElMessageBox.error(`删除失败: ${result.error}`)
+      ElMessage.error(`删除失败: ${result.error}`)
     }
   } catch (err) {
     console.log(err)
@@ -75,7 +97,9 @@ const columns = [{
   key: 'action',
   width: 100,
   title: '操作',
-  cellRenderer: ({ rowData }) => (<ElButton type="danger" size="small" onClick={() => DelFireWall(rowData.id, rowData.ip)}>删除</ElButton>)
+  cellRenderer: ({ cellData: threat }: { cellData: Threat }) => (
+    <ElButton type="danger" size="small" onClick={() => DelFireWall(threat.id, threat.ip)}>删除</ElButton>
+  )
 }]
 
 const data = computed(() => {

@@ -200,7 +200,7 @@ const lineTrendOption = computed(() => {
       </div>
       <div class="subview-chart">
         <h3>情报来源占比</h3>
-        <VChart :option="pieViewOption2" theme="dark" autoresize /> 
+        <VChart :option="pieViewOption2" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
         <h3>To be continue</h3>

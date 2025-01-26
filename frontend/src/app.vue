@@ -3,7 +3,7 @@ import { onMounted, watch, ref } from 'vue'
 import { ElAside, ElContainer, ElMain, ElMenu, ElMenuItem, ElMessage, ElMessageBox, ElScrollbar, } from 'element-plus'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
-import { user, netstats, threats, total } from './utils'
+import { user, netstats, threats } from './utils'
 
 const route = useRoute()
 const router = useRouter()
@@ -28,7 +28,6 @@ watch(user, () => {
       }
     }).then(res => {
       netstats.value = res.data.netstats
-      total.value = res.data.total
 
     }).catch(e => {
       if (e.response.status === 401) {
@@ -42,21 +41,20 @@ watch(user, () => {
       () => route.query.page,
       (newPage) => {
         page.value = Number(newPage) || 1
-        axios.get('/api/netstats',{
+        axios.get('/api/netstats', {
           params: { page: page.value },
           headers: { Authorization: `Bearer ${user.value?.token}` }
         })
-        .then(res => {
-          netstats.value = res.data.netstats
-          total.value = res.data.total
-        })
-        .catch(e => {
-          if (e.response.status === 401) {
-            router.push('/login')
-          } else {
-            ElMessage.error(e.response.data.error ?? e.message)
-          }
-        })
+          .then(res => {
+            netstats.value = res.data.netstats
+          })
+          .catch(e => {
+            if (e.response.status === 401) {
+              router.push('/login')
+            } else {
+              ElMessage.error(e.response.data.error ?? e.message)
+            }
+          })
       }
     )
 
@@ -91,6 +89,7 @@ const navigate = (name: string) => {
           <ElMenuItem index="home">可视大屏</ElMenuItem>
           <ElMenuItem index="threat">威胁情报</ElMenuItem>
           <ElMenuItem index="netstat">网络流量</ElMenuItem>
+          <ElMenuItem index="client">用户管理</ElMenuItem>
           <ElMenuItem index="config">配置文件</ElMenuItem>
           <ElMenuItem v-if="user" @click="ElMessageBox.confirm('确定要退出登录吗？').then(() => { router.push('/login') })">退出登录
           </ElMenuItem>

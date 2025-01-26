@@ -6,6 +6,11 @@ export interface User {
   token: string;
 }
 
+export interface Client {
+  name: string;
+  apikey: string;
+}
+
 export interface Netstat {
   id: number;
   time: number;
@@ -61,8 +66,6 @@ export const user = ref<User>();
 export const netstats = ref<Netstat[]>([]);
 export const threats = ref<Threat[]>([]);
 export const statistcs = ref<Statistics[]>([]);
-export const total = ref(0)
-export const page = ref(1)
 
 export const threatsMap = computed(() => {
   const result: { [ip: string]: Threat } = {};
