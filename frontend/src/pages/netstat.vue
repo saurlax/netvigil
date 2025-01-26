@@ -1,79 +1,90 @@
 <script setup lang="tsx">
-  import { ElAutoResizer, ElTableV2, ElTooltip, ElPagination } from 'element-plus'
-  import { useRouter, useRoute } from 'vue-router';
-  import { netstats, total, page } from '../utils'
-  import { computed } from 'vue'
-  import dayjs from 'dayjs'
+import { ElAutoResizer, ElTableV2, ElTooltip, ElPagination, ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router';
+import { computed, ref, watchEffect } from 'vue'
+import dayjs from 'dayjs'
+import { Netstat, user } from '../utils';
+import axios from 'axios';
 
-  const router = useRouter()
-  const route = useRoute()
-  // const netstats = ref([])
+const router = useRouter()
+const netstats = ref<Netstat[]>([])
+const total = ref(0)
+const page = ref(1)
+const limit = ref(100)
 
-
-  const columns = [{
-    key: 'id',
-    title: 'ID',
-    dataKey: 'id',
-    width: 100
-  }, {
-    key: 'time',
-    title: '记录时间',
-    dataKey: 'time',
-    width: 200
-  }, {
-    key: 'src',
-    title: '本地地址',
-    dataKey: 'src',
-    width: 200
-  }, {
-    key: 'dst',
-    title: '远程地址',
-    dataKey: 'dst',
-    width: 200
-  }, {
-    key: 'location',
-    title: '位置',
-    dataKey: 'location',
-    width: 300
-  }, {
-    key: 'executable',
-    title: '发起程序',
-    dataKey: 'executable',
-    width: 300,
-    cellRenderer: ({ cellData: executable }: { cellData: string }) => {
-      const match = executable.match(/([^\\\/]+)$/)
-      return <ElTooltip content={executable}>{match ? match[0] : executable}</ElTooltip>
+watchEffect(() => {
+  router.push({ query: { page: page.value, limit: limit.value } })
+  axios.get(`/api/netstats?limit=${limit.value}&page=${page.value}`, {
+    headers: {
+      Authorization: `Bearer ${user.value?.token}`
     }
-  }]
-
-  const data = computed(() => netstats.value.map(n => {
-    return {
-      ...n,
-      time: n.time ? dayjs(n.time).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
-      src: n.srcIP && n.srcPort ? `${n.srcIP}:${n.srcPort}` : '未知地址',
-      dst: n.dstIP && n.dstPort ? `${n.dstIP}:${n.dstPort}` : '未知地址',
-      location: n.location || '未知位置',
-      executable: n.executable || '未知程序'
+  }).then(res => {
+    netstats.value = res.data.netstats
+    total.value = res.data.total
+  }).catch(e => {
+    if (e.response.status === 401) {
+      router.push('/login')
+    } else {
+      ElMessage.error(e.response.data.error ?? e.message)
     }
-  }))
+  })
+})
 
-  const updatePage = (newPage: number) => {
-    router.push({
-      query: {
-        ...route.query,
-        page: newPage
-      }
-    })
+
+const columns = [{
+  key: 'id',
+  title: 'ID',
+  dataKey: 'id',
+  width: 100
+}, {
+  key: 'time',
+  title: '记录时间',
+  dataKey: 'time',
+  width: 200
+}, {
+  key: 'src',
+  title: '本地地址',
+  dataKey: 'src',
+  width: 200
+}, {
+  key: 'dst',
+  title: '远程地址',
+  dataKey: 'dst',
+  width: 200
+}, {
+  key: 'location',
+  title: '位置',
+  dataKey: 'location',
+  width: 300
+}, {
+  key: 'executable',
+  title: '发起程序',
+  dataKey: 'executable',
+  width: 300,
+  cellRenderer: ({ cellData: executable }: { cellData: string }) => {
+    const match = executable.match(/([^\\\/]+)$/)
+    return <ElTooltip content={executable}>{match ? match[0] : executable}</ElTooltip>
   }
+}]
+
+const data = computed(() => netstats.value.map(n => {
+  return {
+    ...n,
+    time: n.time ? dayjs(n.time).format('YYYY-MM-DD HH:mm:ss') : '未知时间',
+    src: `${n.srcIP}:${n.srcPort}`,
+    dst: `${n.dstIP}:${n.dstPort}`,
+    location: n.location ?? '未知位置',
+    executable: n.executable ?? '未知程序'
+  }
+}))
 </script>
 
 <template>
   <ElAutoResizer>
     <template #default="{ height, width }">
       <ElTableV2 :columns="columns" :data="data || []" :height="height - 50" :width="width" />
+      <ElPagination v-model:current-page="page" v-model:page-size="limit" :page-sizes="[100, 200, 500]" :total="total"
+        layout="total, sizes, prev, pager, next, jumper" />
     </template>
   </ElAutoResizer>
-  <!-- TODO: 分页的处理 -->
-  <ElPagination :current-page="page" :page-sizes="[200, 500, 1000]" :total="total"
-    layout="total, sizes, prev, pager, next, jumper" @current-change="updatePage" class="pagination" />
 </template>

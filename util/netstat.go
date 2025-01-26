@@ -277,7 +277,7 @@ func GetNetstats(limit int, page int) ([]*Netstat, int, error) {
 	rows, err := DB.Query("SELECT ROWID, time, src_ip, src_port, dst_ip, dst_port, executable, location FROM netstats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
 	log.Printf("Offset: %d, Limit: %d, Page:%d\n", offset, limit, page)
 	if err != nil {
-		log.Printf("SELECT ROWID, time, src_ip, src_port, dst_ip, dst_port, executable, location FROM netstats ORDER BY time DESC LIMIT ? OFFSET ? Failed!Error:", limit, offset, err)
+		log.Println("Failed to query netstats:", err)
 		return nil, 0, err
 	}
 	defer rows.Close()
