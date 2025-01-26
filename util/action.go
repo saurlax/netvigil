@@ -40,7 +40,7 @@ func firewallRuleExistsLinux(ip string, direction string) bool {
 	return err == nil // 如果命令成功执行，说明规则已存在
 }
 
-func AddFireWall(ip string) {
+func AddFireWallRule(ip string) {
 	if getOS() == "windows" {
 		if !firewallRuleExistsWindows(ip, "in") {
 			in := exec.Command("netsh", "advfirewall", "firewall", "add", "rule",
@@ -94,14 +94,49 @@ func AddFireWall(ip string) {
 	}
 }
 
+// 删除防火墙规则（自动适配 Windows / Linux）
+func DeleteFireWallRule(ip string) {
+	if getOS() == "windows" {
+		in := exec.Command("netsh", "advfirewall", "firewall", "delete", "rule", "name=netvigil_block_in_"+ip)
+		out := exec.Command("netsh", "advfirewall", "firewall", "delete", "rule", "name=netvigil_block_out_"+ip)
+
+		if err := in.Run(); err != nil {
+			log.Printf("Failed to delete inbound firewall rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Inbound firewall rule deleted for %s\n", ip)
+		}
+
+		if err := out.Run(); err != nil {
+			log.Printf("Failed to delete outbound firewall rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Outbound firewall rule deleted for %s\n", ip)
+		}
+	} else { // Linux
+		in := exec.Command("iptables", "-D", "INPUT", "-s", ip, "-j", "DROP")
+		out := exec.Command("iptables", "-D", "OUTPUT", "-d", ip, "-j", "DROP")
+
+		if err := in.Run(); err != nil {
+			log.Printf("Failed to delete inbound iptables rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Inbound iptables rule deleted for %s\n", ip)
+		}
+
+		if err := out.Run(); err != nil {
+			log.Printf("Failed to delete outbound iptables rule for %s: %v\n", ip, err)
+		} else {
+			log.Printf("Outbound iptables rule deleted for %s\n", ip)
+		}
+	}
+}
+
 func suspiciousAction(n Netstat) {
-	AddFireWall(n.DstIP)
+	AddFireWallRule(n.DstIP)
 	log.Printf("\x1B[33mSuspicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.DstIP)
 	beeep.Notify("Suspicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }
 
 func maliciousAction(n Netstat) {
-	AddFireWall(n.DstIP)
+	AddFireWallRule(n.DstIP)
 	log.Printf("\x1B[31mMalicious threat detected: %s → %s\x1B[0m\n", n.Executable, n.DstIP)
 	beeep.Notify("Malicious threat detected!", fmt.Sprintf("%s → %s", n.Executable, n.DstIP), "")
 }

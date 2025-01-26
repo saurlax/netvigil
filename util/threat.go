@@ -98,3 +98,8 @@ func GetThreatsByIPs(ips []string) ([]*Threat, error) {
 	}
 	return threats, nil
 }
+
+func DeleteThreatsByIP(ip string) error {
+	_, err := DB.Exec("DELETE FROM threats WHERE ip = ?", ip)
+	return err
+}

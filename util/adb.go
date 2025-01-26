@@ -14,6 +14,7 @@ var (
 	err         error
 )
 
+// Titled this file as `adb.go` to allow it to be initalized first
 func init() {
 	DB, err = sql.Open("sqlite3", "file:netvigil.db")
 	if err != nil {

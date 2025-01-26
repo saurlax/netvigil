@@ -27,35 +27,23 @@ onMounted(() => {
   })
 })
 
-const DelFireWall = async (id: number, ip: string) => {
-  try {
-    await ElMessageBox.confirm(
-      `确定要解除对 ${ip} 的封锁吗？`,
-      '删除威胁ip',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
-    )
-
-    const res = await fetch("/api/threats", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${user.value?.token}` },
-      body: JSON.stringify({ id: Number(id), action: "remove" })
+const deleteFireWallRule = async (ip: string) => {
+  ElMessageBox.confirm('确定删除该威胁记录吗?', '提示', {
+    type: 'warning'
+  }).then(() => {
+    axios.delete(`/api/threats/${ip}`, {
+      headers: { Authorization: `Bearer ${user.value?.token}` },
+    }).then(() => {
+      ElMessage.success('删除成功')
+      threats.value = threats.value.filter(n => n.ip !== ip)
+    }).catch(e => {
+      if (e.response.status === 401) {
+        router.push('/login')
+      } else {
+        ElMessage.error(e.response.data.error ?? e.message)
+      }
     })
-
-    const result = await res.json()
-    if (res.status === 400) {
-      ElMessage.error(`请求参数错误: ${result.error}`)
-      return
-    }
-
-    if (result.success) {
-      threats.value = threats.value.filter(n => n.id !== id)
-      ElMessage.success(`成功删除 ${ip}`)
-    } else {
-      ElMessage.error(`删除失败: ${result.error}`)
-    }
-  } catch (err) {
-    console.log(err)
-  }
+  })
 }
 
 const columns = [{
@@ -95,20 +83,20 @@ const columns = [{
   width: 100
 }, {
   key: 'action',
-  width: 100,
   title: '操作',
-  cellRenderer: ({ cellData: threat }: { cellData: Threat }) => (
-    <ElButton type="danger" size="small" onClick={() => DelFireWall(threat.id, threat.ip)}>删除</ElButton>
+  dataKey: 'ip',
+  width: 100,
+  cellRenderer: ({ cellData: ip }: { cellData: string }) => (
+    <ElButton type="danger" size="small" onClick={() => deleteFireWallRule(ip)}>删除</ElButton>
   )
 }]
 
 const data = computed(() => {
-  if (!threats.value) return []
-  return threats.value.map(n => ({
-    ...n,
-    time: dayjs(n.time).format('YYYY-MM-DD HH:mm:ss'),
-    risk: `${riskLevel[n.risk]}(${n.risk})`,
-    credibility: `${credibilityLevel[n.credibility]}(${n.credibility})`,
+  return threats.value.map(t => ({
+    ...t,
+    time: dayjs(t.time).format('YYYY-MM-DD HH:mm:ss'),
+    risk: `${riskLevel[t.risk]}(${t.risk})`,
+    credibility: `${credibilityLevel[t.credibility]}(${t.credibility})`,
   }))
 })
 </script>
