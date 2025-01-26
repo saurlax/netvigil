@@ -45,7 +45,6 @@ func CheckAll() []*util.Result {
 
 	for _, tic := range tics {
 		for _, res := range tic.Check(netstats) {
-			res.Save()
 			results = append(results, &res)
 			// remove the netstat that has been checked
 			filtered := make([]*util.Netstat, 0)
