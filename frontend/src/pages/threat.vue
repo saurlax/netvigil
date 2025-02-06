@@ -92,7 +92,7 @@ const columns = [{
 }]
 
 const data = computed(() => {
-  return threats.value.map(t => ({
+  return threats.value?.map(t => ({
     ...t,
     time: dayjs(t.time).format('YYYY-MM-DD HH:mm:ss'),
     risk: `${riskLevel[t.risk]}(${t.risk})`,

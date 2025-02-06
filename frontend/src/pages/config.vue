@@ -10,21 +10,19 @@ const router = useRouter()
 const config = ref()
 
 onMounted(() => {
-  if (user.value) {
-    axios.get('/api/config', {
-      headers: {
-        Authorization: `Bearer ${user.value.token}`
-      }
-    }).then(res => {
-      config.value = res.data
-    }).catch(e => {
-      if (e.response.status === 401) {
-        router.push('/login')
-      } else {
-        ElMessage.error(e.response.data.error ?? e.message)
-      }
-    })
-  }
+  axios.get('/api/config', {
+    headers: {
+      Authorization: `Bearer ${user.value?.token}`
+    }
+  }).then(res => {
+    config.value = res.data
+  }).catch(e => {
+    if (e.response.status === 401) {
+      router.push('/login')
+    } else {
+      ElMessage.error(e.response.data.error ?? e.message)
+    }
+  })
 })
 
 const update = () => {

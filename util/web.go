@@ -122,7 +122,7 @@ func clientsHandler(c *gin.Context) {
 
 func createClientHandler(c *gin.Context) {
 	var req struct {
-		name string `json:"name"`
+		Name string `json:"name"`
 	}
 
 	if err := c.BindJSON(&req); err != nil {
@@ -130,7 +130,7 @@ func createClientHandler(c *gin.Context) {
 		return
 	}
 
-	if err := CreateClient(req.name); err != nil {
+	if err := CreateClient(req.Name); err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
