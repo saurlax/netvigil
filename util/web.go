@@ -94,8 +94,7 @@ func netstatsHandler(c *gin.Context) {
 }
 
 func threatsHandler(c *gin.Context) {
-	page, _ := strconv.Atoi(c.Param("page"))
-	records, err := GetThreats(viper.GetInt("page_size"), page)
+	records, err := GetThreats()
 	if err != nil {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
@@ -187,12 +186,17 @@ func staticHandler(c *gin.Context) {
 
 func checkHandler(c *gin.Context) {
 	var req struct {
-		Token string   `json:"token"`
-		IPs   []string `json:"ips"`
+		APIKey string   `json:"apikey"`
+		IPs    []string `json:"ips"`
 	}
 
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	if !VerifyClient(req.APIKey) {
+		c.JSON(401, gin.H{"error": "Invalid API key"})
 		return
 	}
 

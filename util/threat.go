@@ -47,9 +47,8 @@ func (t *Threat) Save() error {
 	return err
 }
 
-func GetThreats(limit int, page int) ([]*Threat, error) {
-	offset := limit * (page - 1)
-	rows, err := DB.Query("SELECT ROWID, time, ip, tic, reason, risk, credibility FROM threats ORDER BY time DESC LIMIT ? OFFSET ?", limit, offset)
+func GetThreats() ([]*Threat, error) {
+	rows, err := DB.Query("SELECT ROWID, time, ip, tic, reason, risk, credibility FROM threats")
 	if err != nil {
 		return nil, err
 	}

@@ -45,6 +45,16 @@ func DeleteClient(apikey string) error {
 	return err
 }
 
+func VerifyClient(apikey string) bool {
+	var count int
+	row := DB.QueryRow("SELECT COUNT(*) FROM clients WHERE apikey = ?", apikey)
+	err := row.Scan(&count)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return count > 0
+}
+
 func init() {
 	DB.Exec("CREATE TABLE IF NOT EXISTS clients (name TEXT, apikey TEXT)")
 }
