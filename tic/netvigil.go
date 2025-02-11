@@ -13,12 +13,12 @@ import (
 
 type Netvigil struct {
 	Server string
-	Token  string
+	APIKey string
 }
 
 type NetvigilRequest struct {
-	Token string   `json:"token"`
-	IPs   []string `json:"ips"`
+	APIKey string   `json:"apikey"`
+	IPs    []string `json:"ips"`
 }
 
 func (t *Netvigil) Check(netstats []*util.Netstat) []util.Result {
@@ -31,8 +31,8 @@ func (t *Netvigil) Check(netstats []*util.Netstat) []util.Result {
 	}
 
 	requestBody, err := json.Marshal(NetvigilRequest{
-		Token: t.Token,
-		IPs:   ips,
+		APIKey: t.APIKey,
+		IPs:    ips,
 	})
 	if err != nil {
 		log.Println("[Netvigil] Failed to marshal request:", err)

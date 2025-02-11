@@ -27,7 +27,7 @@ func create(m map[string]any) TIC {
 	case "netvigil":
 		return &Netvigil{
 			Server: m["server"].(string),
-			Token:  m["token"].(string),
+			APIKey: m["token"].(string),
 		}
 	default:
 		return nil

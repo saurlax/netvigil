@@ -31,6 +31,11 @@ capture = true
 type = 'local'
 
 [[tic]]
+type = 'netvigil'
+server = 'example.com:8080'
+apikey = 'your-api-key'
+
+[[tic]]
 type = 'threatbook'
 apikey = 'your-api-key'
 
