@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import 'echarts'
 import 'echarts-gl'
 import VChart from 'vue-echarts'
-import { stats } from '../utils'
+
+const stats = ref<any[]>([])
+const sevenDayThreatPieChart = ref<{ name: string, value: number }[]>([])
+const geoLocationFrequency = ref<Record<string, number>>({})
+const ticFrequency = ref<Record<string, number>>({})
 
 const mainOption = computed(() => {
   return {
@@ -39,18 +43,25 @@ const mainOption = computed(() => {
   }
 })
 
-const pieViewOption1 = computed(() => {
+onMounted(async () => {
+  try {
+    // 发送请求获取数据
+    const response = await fetch('/api/stats')
+    if (!response.ok) {
+      throw new Error('Failed to fetch stats data')
+    }
+    const data = await response.json()
+
+    sevenDayThreatPieChart.value = data.sevenDayThreatPieChart
+    geoLocationFrequency.value = data.geoLocationFrequency
+    ticFrequency.value = data.ticFrequency
+  } catch (error) {
+    console.error('Error fetching stats data:', error)
+  }
+})
+
+const sevenDaysPieView = computed(() => {
   return {
-    dataset: {
-      source: [
-        ['威胁等级', '数量'],
-        ['安全', stats.value[8][1]],  // 近七日安全的数量
-        ['正常', stats.value[8][2]],  // 近七日正常的数量
-        ['可疑', stats.value[8][3]],  // 近七日可疑的数量
-        ['恶意', stats.value[8][4]],  // 近七日恶意的数量
-        ['未知', stats.value[8][5]],  // 近七日未知的数量
-      ],
-    },
     color: ['#5470c6', '#91cc75', '#73c0de', '#fac858', '#ee6666'],
     tooltip: {
       trigger: 'item',
@@ -58,16 +69,11 @@ const pieViewOption1 = computed(() => {
     },
     series: [
       {
+        name: '近七日威胁度',
         type: 'pie',
         radius: '55%',
         center: ['50%', '50%'],
-        data: [
-          { value: stats.value[8][1], name: '安全' },
-          { value: stats.value[8][2], name: '正常' },
-          { value: stats.value[8][3], name: '可疑' },
-          { value: stats.value[8][4], name: '恶意' },
-          { value: stats.value[8][5], name: '未知' },
-        ],
+        data: sevenDayThreatPieChart.value, // 绑定后端数据
         emphasis: {
           itemStyle: {
             shadowBlur: 10,
@@ -81,22 +87,40 @@ const pieViewOption1 = computed(() => {
   }
 })
 
-const pieViewOption2 = computed(() => {
+const ticFrequencyPieView = computed(() => {
+  const data = Object.keys(ticFrequency.value).map(key => {
+    const value = ticFrequency.value[key];
+    return {
+      name: key,
+      value: value,
+    };
+  });
+
   return {
-    dataset: {
-      source: stats.value,
-    }, backgroundColor: '',
     color: ['#5470c6', '#91cc75', '#73c0de', '#fac858', '#ee6666'],
-    tooltip: {},
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)',
+    },
     series: [
       {
+        name: '情报来源占比',
         type: 'pie',
-        seriesLayoutBy: 'row',
-        encode: { itemName: 0, value: 8 },
+        radius: '55%',
+        center: ['50%', '50%'],
+        data: data,
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowOffsetY: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
       },
     ],
-  }
-})
+  };
+});
 
 const pieViewOption3 = computed(() => {
   return {
@@ -134,18 +158,25 @@ const barFrequencyOption = computed(() => {
 })
 
 const barGeoRankingOption = computed(() => {
+  const geoData = Object.entries(geoLocationFrequency.value)
+    .filter(([location, _]) => location !== '' && location != null)
+    .sort((a, b) => a[1] - b[1])
+
   return {
     dataset: {
-      source: stats.value,
+      source: [
+        ['地理位置', '频率'],
+        ...geoData,
+      ],
     },
     color: ['#91cc75'],
     tooltip: {},
-    xAxis: { type: 'category' },
+    xAxis: { type: 'category' }, 
     yAxis: { type: 'value' },
     series: [
       {
         type: 'bar',
-        encode: { x: 0, y: 8 }, // 假设第 8 列是地理排名数据
+        encode: { x: 0, y: 1 },
       },
     ],
   }
@@ -179,12 +210,12 @@ const lineTrendOption = computed(() => {
       <span>awa</span>
     </div>
     <div class="panel-stats">
-      {{ stats }}
+      
     </div>
     <div class="subviews">
       <div class="subview-chart">
         <h3>近七日威胁度</h3>
-        <VChart :option="pieViewOption1" theme="dark" autoresize />
+        <VChart :option="sevenDaysPieView" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
         <h3>可疑及以上威胁度的频率</h3>
@@ -200,7 +231,7 @@ const lineTrendOption = computed(() => {
       </div>
       <div class="subview-chart">
         <h3>情报来源占比</h3>
-        <VChart :option="pieViewOption2" theme="dark" autoresize />
+        <VChart :option="ticFrequencyPieView" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
         <h3>To be continue</h3>
@@ -242,6 +273,7 @@ const lineTrendOption = computed(() => {
   padding: 10px;
   color: gold;
   border: #4992f14d 1px solid;
+  overflow-y: auto;
 }
 
 .main-chart {
@@ -282,4 +314,31 @@ const lineTrendOption = computed(() => {
   font-weight: normal;
   user-select: none;
 }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+table th, table td {
+  padding: 8px 12px;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+table th {
+  background-color: #2a2a2a;
+  color: white;
+}
+
+table td {
+  background-color: #333;
+  color: white;
+}
+
+table tr:nth-child(even) {
+  background-color: #444;
+}
+
 </style>
