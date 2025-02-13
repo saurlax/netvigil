@@ -103,6 +103,41 @@ func threatsHandler(c *gin.Context) {
 	c.JSON(200, records)
 }
 
+func statsHandler(c *gin.Context) {
+	pieChartData, err := GetSevenDayThreatPieChart(DB)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error":     "Unable to fetch seven-day threat data",
+			"errorinfo": err.Error(),
+		})
+		return
+	}
+	geoLocationFreq, err := GetGeoLocationFrequency(DB)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error":     "Unable to fetch geo location threat frequency",
+			"errorinfo": err.Error(),
+		})
+		return
+	}
+
+	ticFrequency, err := GetTicCount(DB)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error":     "Unable to fetch tic frequency",
+			"errorinfo": err.Error(),
+		})
+		return
+	}
+
+	// 返回数据给前端
+	c.JSON(200, gin.H{
+		"sevenDayThreatPieChart": pieChartData,
+		"geoLocationFrequency":   geoLocationFreq,
+		"ticFrequency":           ticFrequency,
+	})
+}
+
 func deleteThreatsHandler(c *gin.Context) {
 	ip := c.Param("ip")
 
@@ -230,6 +265,7 @@ func init() {
 	r.GET("/api/config", authHandler, readConfigHandler)
 	r.POST("/api/config", authHandler, writeConfigHandler)
 	r.POST("/api/check", checkHandler)
+	r.GET("/api/stats", statsHandler)
 
 	r.NoRoute(staticHandler)
 
