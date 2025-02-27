@@ -11,7 +11,6 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/gopacket v1.1.19
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/nu7hatch/gouuid v0.0.0-20131221200532-179d4d0c4d8d
 	github.com/spf13/viper v1.18.2
 	github.com/yalue/onnxruntime_go v1.17.0
 )
