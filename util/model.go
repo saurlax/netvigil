@@ -14,7 +14,7 @@ func init() {
 // check 函数：加载模型并进行推理
 func Check(inputData []float32) ([]float32, error) {
 
-	ort.SetSharedLibraryPath("E:/onnxruntime-1.20.2/onnxruntime-win-x64-1.20.0/onnxruntime-win-x64-1.20.0/lib/onnxruntime.dll")
+	ort.SetSharedLibraryPath("../model_64/onnxruntime.dll")
 	err := ort.InitializeEnvironment()
 	if err != nil {
 		panic(err)
@@ -22,7 +22,7 @@ func Check(inputData []float32) ([]float32, error) {
 	defer ort.DestroyEnvironment()
 
 	// 读取 ONNX 模型文件
-	modelPath := "./model_64/modified_mobilenetv2_dst_64.onnx"
+	modelPath := "../model_64/modified_mobilenetv2_dst_64.onnx"
 
 	// 创建输入张量，shape: (1, 1, 8, 8)
 	inputShape := ort.NewShape(1, 1, 8, 8)
