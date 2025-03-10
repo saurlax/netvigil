@@ -3,6 +3,7 @@ package util
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 type RiskLevel int
@@ -96,6 +97,11 @@ func GetThreatsByIPs(ips []string) ([]*Threat, error) {
 		threats = append(threats, &t)
 	}
 	return threats, nil
+}
+
+func AddThreatsByIP(ip string) error {
+	_, err := DB.Exec("INSERT INTO threats (time, ip, tic, reason, risk, credibility) VALUES (?, ?, ?, ?, ?, ?)", time.Now().UnixMilli(), ip, "local", "Local Addition", Suspicious, Low) // 这里用到了unixmilli，能换吗？
+	return err
 }
 
 func DeleteThreatsByIP(ip string) error {

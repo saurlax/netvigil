@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -138,6 +139,31 @@ func statsHandler(c *gin.Context) {
 	})
 }
 
+func addThreatsHandler(c *gin.Context) {
+	var req struct {
+		IP string `json:"ip"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+	ip := req.IP
+	if net.ParseIP(ip) == nil {
+		c.JSON(400, gin.H{"error": "Invalid IP address"})
+		return
+	}
+	if err := AddFireWallRule(ip); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := AddThreatsByIP(ip); err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(200, gin.H{"status": "ok"})
+}
+
 func deleteThreatsHandler(c *gin.Context) {
 	ip := c.Param("ip")
 
@@ -258,6 +284,7 @@ func init() {
 	r.POST("/api/login", loginHandler)
 	r.GET("/api/netstats", netstatsHandler)
 	r.GET("/api/threats", authHandler, threatsHandler)
+	r.POST("/api/threats", authHandler, addThreatsHandler)
 	r.DELETE("/api/threats/:ip", authHandler, deleteThreatsHandler)
 	r.GET("/api/clients", authHandler, clientsHandler)
 	r.POST("/api/clients", authHandler, createClientHandler)

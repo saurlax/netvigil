@@ -8,7 +8,6 @@ import (
 
 func init() {
 	viper.SetDefault("check_period", "60s")
-	viper.SetDefault("page_size", 200)
 	viper.SetConfigFile("config.toml")
 	err := viper.ReadInConfig()
 	if err != nil {
