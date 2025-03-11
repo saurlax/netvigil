@@ -133,8 +133,10 @@ func GetGeoLocationFrequency(DB *sql.DB) (map[string]int64, error) {
 
 func GetTicCount(DB *sql.DB) (map[string]int64, error) {
 	rows, err := DB.Query(`
-		SELECT reason, COUNT(*) as frequency
+		SELECT tic, COUNT(*) as frequency
 		FROM threats
+		GROUP BY tic
+		ORDER BY frequency DESC
 	`)
 	if err != nil {
 		log.Println("Error fetching tic count:", err)
@@ -145,17 +147,49 @@ func GetTicCount(DB *sql.DB) (map[string]int64, error) {
 	ticCount := make(map[string]int64)
 
 	for rows.Next() {
-		var reason string
+		var ticName string
 		var frequency int64
-		err := rows.Scan(&reason, &frequency)
+		err := rows.Scan(&ticName, &frequency)
 		if err != nil {
 			log.Println("Error scanning tic count data:", err)
 			return nil, fmt.Errorf("error scanning tic count data: %v", err)
 		}
-		ticCount[reason] = frequency
+		ticCount[ticName] = frequency
 	}
 
 	return ticCount, nil
+}
+
+func GetSuspiciousAboveFrequency(DB *sql.DB) ([]map[string]int64, error) {
+	rows, err := DB.Query(`
+		SELECT time, COALESCE(risk_suspicious_count, 0) + COALESCE(risk_malicious_count, 0) AS SuspiciousAboveFrequency
+		FROM statistics
+		WHERE time >= (SELECT MAX(time) FROM statistics) - 7
+		ORDER BY time DESC
+	`)
+	if err != nil {
+		log.Println("Error fetching suspicious above frequency:", err)
+		return nil, fmt.Errorf("error fetching suspicious above frequency: %v", err)
+	}
+	defer rows.Close()
+
+	var results []map[string]int64
+	for rows.Next() {
+		var time int64
+		var SuspiciousAboveFrequency int64
+		err := rows.Scan(&time, &SuspiciousAboveFrequency)
+		if err != nil {
+			log.Println("Error scanning suspicious above frequency data:", err)
+			return nil, fmt.Errorf("error scanning suspicious above frequency data: %v", err)
+		}
+
+		results = append(results, map[string]int64{
+			"time":                     time * statsPeriod,
+			"SuspiciousAboveFrequency": SuspiciousAboveFrequency,
+		})
+	}
+
+	return results, nil
 }
 
 func init() {
