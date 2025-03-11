@@ -24,9 +24,6 @@ web = '127.0.0.1:8080'
 username = 'username'
 password = 'password'
 
-# Option to capture traffic, default is false
-capture = true
-
 [[tic]]
 type = 'local'
 
@@ -48,7 +45,6 @@ Here is all TICs you can use:
 - `netvigil`: NetVigil, usually used for local network
 - `threatbook`: [Threatbook](https://x.threatbook.cn/)
 - `virustotal`: [VirusTotal](https://www.virustotal.com/)
-- `aliyun`: [Aliyun](https://www.aliyun.com/)
 
 In addition, you also need to provide a copy of `GeoLite2-City.mmdb` in the root directory, which you can find at [GeoLite2 Website](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data).
 
@@ -93,14 +89,20 @@ end
 
 ## APIs
 
-| Path            | Method | Request                | Response  | Description                |
-| --------------- | ------ | ---------------------- | --------- | -------------------------- |
-| `/api/login`    | POST   | `{username, password}` | Token     |                            |
-| `/api/netstats` | GET    | `?limit&page`          | Netstat[] | Auth needed                |
-| `/api/threats`  | GET    | `?limit&page`          | Threat[]  | Auth needed                |
-| `/api/config`   | GET    |                        | Config    | Auth needed                |
-| `/api/config`   | POST   | Config                 |           | Modify config, auth needed |
-| `/api/check`    | POST   | `{apikey, ips}`        | Threat[]  | Check IP reputation        |
+| Path                   | Method | Request                | Response    | Description                            |
+| ---------------------- | ------ | ---------------------- | ----------- | -------------------------------------- |
+| `/api/login`           | POST   | `{username, password}` | Token       | Login Page                             |
+| `/api/netstats`        | GET    | `?limit&page`          | Netstat[]   | Get network data, Auth needed          |
+| `/api/threats`         | GET    | `?limit&page`          | Threat[]    | Get Threats ip, Auth needed            |
+| `/api/threats`         | POST   | `{ip}`                 | Error or Ok | Add Threats ip, Auth needed            |
+| `/api/threats/:ip`     | DELETE | `/ip`                  |             | Delete Threats ip, Auth needed         |
+| `/api/clients`         | GET    |                        | Client[]    | Get user informaition, Auth needed     |
+| `/api/clients`         | POST   | `{name}`               | Error or Ok | Add user, Auth needed                  |
+| `/api/clients/:apikey` | DELETE | `/apikey`              | Error or Ok | Delete user, Auth needed               |
+| `/api/config`          | GET    |                        | Config      | Get configuration, Auth needed         |
+| `/api/config`          | POST   | Config                 |             | Modify config, auth needed             |
+| `/api/check`           | POST   | `{apikey, ips}`        | Threat[]    | Check IP reputation                    |
+| `/api/stats`           | GET    |                        | Index Data  | Get index data to display, auth needed |
 
 ### Types
 
@@ -128,6 +130,30 @@ type Threat struct {
 	Credibility CredibilityLevel `json:"credibility"`
 }
 ```
+
+```go
+type Client struct {
+	Name string `json:"name"`
+	// Apikey is used in netvigil tic of `config.toml`
+	Apikey string `json:"apikey"`
+}
+```
+
+```go
+type Statistics struct {
+	Time                   time.Time
+	RiskUnknownCount       int64 `json:"risk_unknown_count"`
+	RiskSafeCount          int64 `json:"risk_safe_count"`
+	RiskNormalCount        int64 `json:"risk_normal_count"`
+	RiskSuspiciousCount    int64 `json:"risk_suspicious_count"`
+	RiskMaliciousCount     int64 `json:"risk_malicious_count"`
+	CredibilityLowCount    int64 `json:"credibility_low_count"`
+	CredibilityMediumCount int64 `json:"credibility_medium_count"`
+	CredibilityHighCount   int64 `json:"credibility_high_count"`
+}
+```
+
+
 
 ## FAQs
 
