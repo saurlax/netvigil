@@ -6,6 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/IncSW/geoip2 v0.1.2
+	github.com/endeveit/guesslanguage v0.0.0-20141216121003-b9ec07401dcb
 	github.com/gen2brain/beeep v0.0.0-20240112042604-c7bb2cd88fea
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v5 v5.2.1
@@ -14,6 +15,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/spf13/viper v1.18.2
 	github.com/yalue/onnxruntime_go v1.17.0
+	golang.org/x/text v0.21.0
 )
 
 require (
@@ -59,7 +61,6 @@ require (
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa // indirect
 	golang.org/x/net v0.24.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

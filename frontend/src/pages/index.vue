@@ -9,7 +9,9 @@ const stats = ref<any[]>([]);
 const sevenDayThreatPieChart = ref<{ name: string; value: number }[]>([]);
 const geoLocationFrequency = ref<Record<string, number>>({});
 const ticFrequency = ref<Record<string, number>>({});
-const SuspiciousAboveFrequency = ref<Array<{time: number; SuspiciousAboveFrequency: number}>>([]);
+const SuspiciousAboveFrequency = ref<
+  Array<{ time: number; SuspiciousAboveFrequency: number }>
+>([]);
 
 const time = ref(dayjs());
 
@@ -59,7 +61,6 @@ onMounted(async () => {
     geoLocationFrequency.value = data.geoLocationFrequency;
     ticFrequency.value = data.ticFrequency;
     SuspiciousAboveFrequency.value = data.SuspiciousAboveFrequency;
-
   } catch (error) {
     console.error("Error fetching stats data:", error);
   }
@@ -151,11 +152,12 @@ const pieViewOption3 = computed(() => {
 
 const barFrequencyOption = computed(() => {
   const sortedData = SuspiciousAboveFrequency.value
-    .map((item: { time: number; SuspiciousAboveFrequency: number; }) => ({
+    .map((item: { time: number; SuspiciousAboveFrequency: number }) => ({
       time: dayjs(item.time * 1000).format("YYYY-MM-DD"),
       SuspiciousAboveFrequency: item.SuspiciousAboveFrequency,
     }))
     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
+
   return {
     dataset: {
       source: sortedData,
@@ -167,7 +169,7 @@ const barFrequencyOption = computed(() => {
     series: [
       {
         type: "bar",
-        encode: { x: time, y: SuspiciousAboveFrequency }, 
+        encode: { x: "time", y: "SuspiciousAboveFrequency" },
       },
     ],
   };
