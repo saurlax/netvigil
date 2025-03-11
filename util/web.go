@@ -131,11 +131,21 @@ func statsHandler(c *gin.Context) {
 		return
 	}
 
+	SuspiciousAboveFrequency, err := GetSuspiciousAboveFrequency(DB)
+	if err != nil {
+		c.JSON(500, gin.H{
+			"error":     "Unable to fetch suspicious frequency",
+			"errorinfo": err.Error(),
+		})
+		return
+	}
+
 	// 返回数据给前端
 	c.JSON(200, gin.H{
-		"sevenDayThreatPieChart": pieChartData,
-		"geoLocationFrequency":   geoLocationFreq,
-		"ticFrequency":           ticFrequency,
+		"sevenDayThreatPieChart":   pieChartData,
+		"geoLocationFrequency":     geoLocationFreq,
+		"ticFrequency":             ticFrequency,
+		"SuspiciousAboveFrequency": SuspiciousAboveFrequency,
 	})
 }
 
