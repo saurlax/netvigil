@@ -9,6 +9,7 @@ const stats = ref<any[]>([]);
 const sevenDayThreatPieChart = ref<{ name: string; value: number }[]>([]);
 const geoLocationFrequency = ref<Record<string, number>>({});
 const ticFrequency = ref<Record<string, number>>({});
+const SuspiciousAboveFrequency = ref<Array<{time: number; SuspiciousAboveFrequency: number}>>([]);
 
 const time = ref(dayjs());
 
@@ -48,7 +49,6 @@ const mainOption = computed(() => {
 
 onMounted(async () => {
   try {
-    // 发送请求获取数据
     const response = await fetch("/api/stats");
     if (!response.ok) {
       throw new Error("Failed to fetch stats data");
@@ -58,6 +58,8 @@ onMounted(async () => {
     sevenDayThreatPieChart.value = data.sevenDayThreatPieChart;
     geoLocationFrequency.value = data.geoLocationFrequency;
     ticFrequency.value = data.ticFrequency;
+    SuspiciousAboveFrequency.value = data.SuspiciousAboveFrequency;
+
   } catch (error) {
     console.error("Error fetching stats data:", error);
   }
@@ -148,9 +150,15 @@ const pieViewOption3 = computed(() => {
 });
 
 const barFrequencyOption = computed(() => {
+  const sortedData = SuspiciousAboveFrequency.value
+    .map((item: { time: number; SuspiciousAboveFrequency: number; }) => ({
+      time: dayjs(item.time * 1000).format("YYYY-MM-DD"),
+      SuspiciousAboveFrequency: item.SuspiciousAboveFrequency,
+    }))
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
   return {
     dataset: {
-      source: stats.value,
+      source: sortedData,
     },
     color: ["#73c0de", "#fac858", "#ee6666"],
     tooltip: {},
@@ -159,7 +167,7 @@ const barFrequencyOption = computed(() => {
     series: [
       {
         type: "bar",
-        encode: { x: 0, y: [3, 4, 5] }, // 使用“可疑、恶意”的统计数据
+        encode: { x: time, y: SuspiciousAboveFrequency }, 
       },
     ],
   };
