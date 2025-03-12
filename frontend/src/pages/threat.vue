@@ -140,7 +140,7 @@ const data = computed(() => {
 <template>
   <div style="margin-top: 20px">
     <ElInput v-model="setIP" placeholder="输入IP" style="width: 200px; margin-right: 10px;" />
-    <ElButton type="primary" @click="addFireWallRule(setIP)">添加威胁ip</ElButton>
+    <ElButton type="primary" @click="addFireWallRule(setIP)">添加威胁IP</ElButton>
   </div>
   <ElAutoResizer>
     <template #default="{ height, width }">
