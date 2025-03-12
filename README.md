@@ -20,6 +20,9 @@ check_period = '10s'
 # leave it empty if you don't want to use the web interface
 web = '127.0.0.1:8080'
 
+# Option to capture traffic, default is false
+capture = true
+ 
 # Login credentials for the web interface
 username = 'username'
 password = 'password'
