@@ -7,23 +7,52 @@ import { dayjs, ElStatistic } from "element-plus";
 
 const stats = ref<any[]>([]);
 const sevenDayThreatPieChart = ref<{ name: string; value: number }[]>([]);
-const geoLocationFrequency = ref<Record<string, number>>({});
-const ticFrequency = ref<Record<string, number>>({});
-const SuspiciousAboveFrequency = ref<
-  Array<{ time: number; SuspiciousAboveFrequency: number }>
+const geoLocationFrequency = ref<
+  Array<{
+    name: string;
+    longitude: number;
+    latitude: number;
+    count: number;
+  }>
 >([]);
+const ticFrequency = ref<Record<string, number>>({});
+const suspiciousAboveFrequency = ref<Record<number, number>>({});
 
 const time = ref(dayjs());
 
 const mainOption = computed(() => {
+  const beijingCoord = [116.4074, 39.9042];
+
+  const linesData = geoLocationFrequency.value.map((location) => {
+    const targetCoord = [location.longitude, location.latitude];
+    return {
+      coords: [targetCoord, beijingCoord],
+      value: location.count,
+      lineStyle: {
+        width: Math.min(Math.log(location.count), 10),
+        opacity: 1,
+      },
+    };
+  });
+
   return {
     dataset: {
       source: stats.value,
     },
     color: ["#5470c6", "#91cc75", "#73c0de", "#fac858", "#ee6666"],
     legend: {},
-    tooltip: {},
-    series: [],
+    series: [
+      {
+        type: "lines3D",
+        coordinateSystem: "globe",
+        blendMode: "lighter",
+        effect: {
+          show: true,
+          period: 3,
+        },
+        data: linesData,
+      },
+    ],
     globe: {
       baseTexture: "/assets/earth.webp",
       heightTexture: "/assets/height.webp",
@@ -60,7 +89,7 @@ onMounted(async () => {
     sevenDayThreatPieChart.value = data.sevenDayThreatPieChart;
     geoLocationFrequency.value = data.geoLocationFrequency;
     ticFrequency.value = data.ticFrequency;
-    SuspiciousAboveFrequency.value = data.SuspiciousAboveFrequency;
+    suspiciousAboveFrequency.value = data.suspiciousAboveFrequency;
   } catch (error) {
     console.error("Error fetching stats data:", error);
   }
@@ -70,6 +99,7 @@ onMounted(async () => {
   }, 1000);
 });
 
+// 近七日威胁度
 const sevenDaysPieView = computed(() => {
   return {
     color: ["#5470c6", "#91cc75", "#73c0de", "#fac858", "#ee6666"],
@@ -97,6 +127,7 @@ const sevenDaysPieView = computed(() => {
   };
 });
 
+// 情报来源占比
 const ticFrequencyPieView = computed(() => {
   const data = Object.keys(ticFrequency.value).map((key) => {
     const value = ticFrequency.value[key];
@@ -137,7 +168,6 @@ const pieViewOption3 = computed(() => {
     dataset: {
       source: stats.value,
     },
-    backgroundColor: "",
     color: ["#5470c6", "#91cc75", "#73c0de", "#fac858", "#ee6666"],
     tooltip: {},
     series: [
@@ -150,11 +180,12 @@ const pieViewOption3 = computed(() => {
   };
 });
 
+// 可疑及以上威胁度的频率
 const barFrequencyOption = computed(() => {
-  const sortedData = SuspiciousAboveFrequency.value
-    .map((item: { time: number; SuspiciousAboveFrequency: number }) => ({
-      time: dayjs(item.time * 1000).format("YYYY-MM-DD"),
-      SuspiciousAboveFrequency: item.SuspiciousAboveFrequency,
+  const sortedData = Object.entries(suspiciousAboveFrequency.value)
+    .map(([timeStr, value]) => ({
+      time: dayjs(parseInt(timeStr) * 1000).format("YYYY-MM-DD"),
+      suspiciousAboveFrequency: value,
     }))
     .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime());
 
@@ -169,16 +200,17 @@ const barFrequencyOption = computed(() => {
     series: [
       {
         type: "bar",
-        encode: { x: "time", y: "SuspiciousAboveFrequency" },
+        encode: { x: "time", y: "suspiciousAboveFrequency" },
       },
     ],
   };
 });
 
+// 地理位置排名
 const barGeoRankingOption = computed(() => {
-  const geoData = Object.entries(geoLocationFrequency.value)
-    .filter(([location, _]) => location !== "" && location != null)
-    .sort((a, b) => a[1] - b[1]);
+  const geoData = geoLocationFrequency.value
+    .sort((a, b) => a.count - b.count)
+    .map((item) => [item.name, item.count]);
 
   return {
     dataset: {
@@ -197,6 +229,7 @@ const barGeoRankingOption = computed(() => {
   };
 });
 
+// 威胁度走势
 const lineTrendOption = computed(() => {
   return {
     dataset: {
@@ -247,7 +280,7 @@ const lineTrendOption = computed(() => {
         <VChart :option="ticFrequencyPieView" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>To be continue</h3>
+        <h3>API请求量</h3>
         <VChart :option="pieViewOption3" theme="dark" autoresize />
       </div>
     </div>

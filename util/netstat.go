@@ -18,14 +18,16 @@ import (
 )
 
 type Netstat struct {
-	ID         int64  `json:"id"`
-	Time       int64  `json:"time"`
-	SrcIP      string `json:"srcIP"`
-	SrcPort    uint16 `json:"srcPort"`
-	DstIP      string `json:"dstIP"`
-	DstPort    uint16 `json:"dstPort"`
-	Executable string `json:"executable"`
-	Location   string `json:"location"`
+	ID         int64   `json:"id"`
+	Time       int64   `json:"time"`
+	SrcIP      string  `json:"srcIP"`
+	SrcPort    uint16  `json:"srcPort"`
+	DstIP      string  `json:"dstIP"`
+	DstPort    uint16  `json:"dstPort"`
+	Executable string  `json:"executable"`
+	Location   string  `json:"location"`
+	Latitude   float64 `json:"latitude"`
+	Longitude  float64 `json:"longitude"`
 	Packet     gopacket.Packet
 }
 
@@ -88,6 +90,9 @@ func capture(ps *gopacket.PacketSource) {
 		ipAddr := net.ParseIP(n.DstIP)
 		record, _ := GeoLiteCity.Lookup(ipAddr)
 		if record != nil {
+			n.Latitude = record.Location.Latitude
+			n.Longitude = record.Location.Longitude
+
 			countryName := record.Country.Names["zh-CN"]
 			if countryName == "" {
 				countryName = record.Country.Names["en"]
@@ -224,7 +229,17 @@ func getLinuxExecutableByInode(inode string) string {
 }
 
 func init() {
-	DB.Exec("CREATE TABLE IF NOT EXISTS netstats (time INTEGER, src_ip TEXT, src_port INTEGER, dst_ip TEXT, dst_port INTEGER, executable TEXT, location TEXT)")
+	DB.Exec(`CREATE TABLE IF NOT EXISTS netstats (
+		time INTEGER, 
+		src_ip TEXT, 
+		src_port INTEGER, 
+		dst_ip TEXT, 
+		dst_port INTEGER, 
+		executable TEXT, 
+		location TEXT,
+		latitude REAL,
+		longitude REAL
+)`)
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_time ON netstats (time)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_src_ip ON netstats (src_ip)")
 	DB.Exec("CREATE INDEX IF NOT EXISTS idx_src_port ON netstats (src_port)")
@@ -258,7 +273,8 @@ func init() {
 }
 
 func (n *Netstat) Save() error {
-	_, err := DB.Exec("INSERT INTO netstats (time, src_ip, src_port, dst_ip, dst_port, executable, location) VALUES (?, ?, ?, ?, ?, ?, ?)", n.Time, n.SrcIP, n.SrcPort, n.DstIP, n.DstPort, n.Executable, n.Location)
+	_, err := DB.Exec("INSERT INTO netstats (time, src_ip, src_port, dst_ip, dst_port, executable, location, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		n.Time, n.SrcIP, n.SrcPort, n.DstIP, n.DstPort, n.Executable, n.Location, n.Latitude, n.Longitude)
 	return err
 }
 
