@@ -100,7 +100,7 @@ onMounted(async () => {
 });
 
 // 近七日威胁度
-const sevenDaysPieView = computed(() => {
+const sevenDaysThreatOption = computed(() => {
   return {
     color: ["#5470c6", "#91cc75", "#73c0de", "#fac858", "#ee6666"],
     tooltip: {
@@ -128,7 +128,7 @@ const sevenDaysPieView = computed(() => {
 });
 
 // 情报来源占比
-const ticFrequencyPieView = computed(() => {
+const ticProportionOption = computed(() => {
   const data = Object.keys(ticFrequency.value).map((key) => {
     const value = ticFrequency.value[key];
     return {
@@ -163,25 +163,28 @@ const ticFrequencyPieView = computed(() => {
   };
 });
 
-const pieViewOption3 = computed(() => {
+const apiTrendOption = computed(() => {
   return {
     dataset: {
       source: stats.value,
     },
-    color: ["#5470c6", "#91cc75", "#73c0de", "#fac858", "#ee6666"],
     tooltip: {},
+    xAxis: {
+      type: "category",
+    },
+    yAxis: {
+      type: "value",
+    },
     series: [
       {
-        type: "pie",
-        seriesLayoutBy: "row",
-        encode: { itemName: 0, value: 8 },
+        type: "line",
       },
     ],
   };
 });
 
 // 可疑及以上威胁度的频率
-const barFrequencyOption = computed(() => {
+const threatFrequencyOption = computed(() => {
   const sortedData = Object.entries(suspiciousAboveFrequency.value)
     .map(([timeStr, value]) => ({
       time: dayjs(parseInt(timeStr) * 1000).format("YYYY-MM-DD"),
@@ -207,7 +210,7 @@ const barFrequencyOption = computed(() => {
 });
 
 // 地理位置排名
-const barGeoRankingOption = computed(() => {
+const geoRankOption = computed(() => {
   const geoData = geoLocationFrequency.value
     .sort((a, b) => a.count - b.count)
     .map((item) => [item.name, item.count]);
@@ -230,7 +233,7 @@ const barGeoRankingOption = computed(() => {
 });
 
 // 威胁度走势
-const lineTrendOption = computed(() => {
+const threatTrendOption = computed(() => {
   return {
     dataset: {
       source: stats.value,
@@ -261,27 +264,27 @@ const lineTrendOption = computed(() => {
     <div class="subviews">
       <div class="subview-chart">
         <h3>近七日威胁度</h3>
-        <VChart :option="sevenDaysPieView" theme="dark" autoresize />
-      </div>
-      <div class="subview-chart">
-        <h3>可疑及以上威胁度的频率</h3>
-        <VChart :option="barFrequencyOption" theme="dark" autoresize />
-      </div>
-      <div class="subview-chart">
-        <h3>地理位置排名</h3>
-        <VChart :option="barGeoRankingOption" theme="dark" autoresize />
-      </div>
-      <div class="subview-chart">
-        <h3>威胁度走势</h3>
-        <VChart :option="lineTrendOption" theme="dark" autoresize />
+        <VChart :option="sevenDaysThreatOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
         <h3>情报来源占比</h3>
-        <VChart :option="ticFrequencyPieView" theme="dark" autoresize />
+        <VChart :option="ticProportionOption" theme="dark" autoresize />
       </div>
       <div class="subview-chart">
-        <h3>API请求量</h3>
-        <VChart :option="pieViewOption3" theme="dark" autoresize />
+        <h3>可疑威胁度频率</h3>
+        <VChart :option="threatFrequencyOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>网络流量来源排名</h3>
+        <VChart :option="geoRankOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>威胁度走势</h3>
+        <VChart :option="threatTrendOption" theme="dark" autoresize />
+      </div>
+      <div class="subview-chart">
+        <h3>API请求量走势</h3>
+        <VChart :option="apiTrendOption" theme="dark" autoresize />
       </div>
     </div>
   </div>
