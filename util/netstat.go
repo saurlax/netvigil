@@ -257,9 +257,9 @@ func init() {
 				if !addr.IP.IsLoopback() && !addr.IP.IsUnspecified() {
 					handle, err := pcap.OpenLive(dev.Name, 1600, true, -1)
 					if err != nil {
-						log.Fatalf("Error opening device %s: %v\n", dev.Name, err)
+						log.Fatalf("Error opening device %s (%s): %v\n", dev.Name, dev.Description, err)
 					} else {
-						log.Printf("Capturing on device: %s\n", dev.Name)
+						log.Printf("Capturing on device: %s (%s)\n", dev.Name, dev.Description)
 					}
 					packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 					go capture(packetSource)

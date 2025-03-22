@@ -52,6 +52,7 @@ func VerifyClient(apikey string) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return count > 0
 }
 
