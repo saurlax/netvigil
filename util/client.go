@@ -3,7 +3,7 @@ package util
 import (
 	"log"
 
-	uuid "github.com/nu7hatch/gouuid"
+	uuid "github.com/google/uuid"
 )
 
 type Client struct {
@@ -32,7 +32,7 @@ func GetClients() []Client {
 }
 
 func CreateClient(name string) error {
-	u, err := uuid.NewV4()
+	u, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
@@ -52,6 +52,7 @@ func VerifyClient(apikey string) bool {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	return count > 0
 }
 
