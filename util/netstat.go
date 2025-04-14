@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 
@@ -18,21 +17,21 @@ import (
 )
 
 type Netstat struct {
-	ID         int64   `json:"id"`
-	Time       int64   `json:"time"`
-	SrcIP      string  `json:"srcIP"`
-	SrcPort    uint16  `json:"srcPort"`
-	DstIP      string  `json:"dstIP"`
-	DstPort    uint16  `json:"dstPort"`
-	Executable string  `json:"executable"`
-	Location   string  `json:"location"`
-	Latitude   float64 `json:"latitude"`
-	Longitude  float64 `json:"longitude"`
-	Packet     gopacket.Packet
+	ID         int64           `json:"id"`
+	Time       int64           `json:"time"`
+	SrcIP      string          `json:"srcIP"`
+	SrcPort    uint16          `json:"srcPort"`
+	DstIP      string          `json:"dstIP"`
+	DstPort    uint16          `json:"dstPort"`
+	Executable string          `json:"executable"`
+	Location   string          `json:"location"`
+	Latitude   float64         `json:"latitude"`
+	Longitude  float64         `json:"longitude"`
+	Packet     gopacket.Packet `json:"-"`
 }
 
 var (
-	Netstats chan Netstat = make(chan Netstat, 1024)
+	Netstats = make(chan Netstat, 65536)
 )
 
 // Capture network traffic information
@@ -72,19 +71,16 @@ func capture(ps *gopacket.PacketSource) {
 			if udpLayer != nil {
 				n.SrcPort = uint16(udpLayer.(*layers.UDP).SrcPort)
 				n.DstPort = uint16(udpLayer.(*layers.UDP).DstPort)
-			} else {
-				continue
 			}
 		}
 
+		// FIXME: It takes a long time to get the executable name, which causing the packet loss.
 		// 获取发起程序信息
-		if runtime.GOOS == "windows" {
-			n.Executable = findExecutableWindows(n.SrcPort)
-		} else if runtime.GOOS == "linux" {
-			n.Executable = findExecutableLinux(n.SrcPort)
-		} else {
-			n.Executable = "The OS has not been supported yet!"
-		}
+		// if runtime.GOOS == "windows" {
+		// 	n.Executable = findExecutableWindows(n.SrcPort)
+		// } else if runtime.GOOS == "linux" {
+		// 	n.Executable = findExecutableLinux(n.SrcPort)
+		// }
 
 		// Get the location of the IP address
 		ipAddr := net.ParseIP(n.DstIP)
@@ -254,12 +250,13 @@ func init() {
 
 		for _, dev := range devices {
 			for _, addr := range dev.Addresses {
+				// If the device has a non-loopback address, open it for capturing
 				if !addr.IP.IsLoopback() && !addr.IP.IsUnspecified() {
-					handle, err := pcap.OpenLive(dev.Name, 1600, true, -1)
+					handle, err := pcap.OpenLive(dev.Name, 1600, false, -1)
 					if err != nil {
 						log.Fatalf("Error opening device %s (%s): %v\n", dev.Name, dev.Description, err)
 					} else {
-						log.Printf("Capturing on device: %s (%s)\n", dev.Name, dev.Description)
+						log.Printf("Capturing device: %s (%s)\n", dev.Name, dev.Description)
 					}
 					packetSource := gopacket.NewPacketSource(handle, handle.LinkType())
 					go capture(packetSource)
